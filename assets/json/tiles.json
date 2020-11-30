@@ -1,0 +1,124 @@
+{
+  "placeholder": {
+    "id": 0,
+    "name": "placeholder",
+    "ascii": "X",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_151.png",
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "blocks": false
+  },
+  "floor": {
+    "id": 0,
+    "name": "floor",
+    "ascii": ".",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_578.png",
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "blocks": false
+  },
+  "wall": {
+    "id": 1,
+    "name": "wall",
+    "ascii": "#",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_692.png",
+    "blocks": false,
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "bitmask_values": {
+      "0": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_1824.png"
+      },
+      "1": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_811.png"
+      },
+      "2": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_699.png"
+      },
+      "3": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_758.png"
+      },
+      "4": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_697.png"
+      },
+      "5": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_757.png"
+      },
+      "6": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_698.png"
+      },
+      "7": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_703.png"
+      },
+      "8": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_754.png"
+      },
+      "9": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_756.png"
+      },
+      "10": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_701.png"
+      },
+      "11": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_759.png"
+      },
+      "12": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_700.png"
+      },
+      "13": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_702.png"
+      },
+      "14": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_760.png"
+      },
+      "15": {
+        "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_755.png"
+      }
+    }
+  },
+  "stone": {
+    "id": 0,
+    "name": "stone",
+    "ascii": " ",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_920.png",
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "blocks": false
+  },
+  "door": {
+    "id": 0,
+    "name": "door",
+    "ascii": "+",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_90.png",
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "blocks": true
+  },
+  "open_door": {
+    "id": 0,
+    "name": "open_door",
+    "ascii": "'",
+    "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_151.png",
+    "tileset_alpha": [
+      0,
+      0,
+      0
+    ],
+    "blocks": false
+  }
+}

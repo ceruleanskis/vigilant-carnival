@@ -1,0 +1,4 @@
+cd docs
+make html
+cd ..
+sphinx-apidoc -o docs/source/ .
