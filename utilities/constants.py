@@ -1,5 +1,6 @@
 import os
 
+VERSION = "0.1.0"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DISPLAY_WIDTH = 1920
@@ -10,7 +11,7 @@ GRID_DISPLAY = False
 COORDINATE_DISPLAY = False
 FPS_DISPLAY = True
 TILE_SIZE = 40
-FOG_OF_WAR_ON = True
+FOG_OF_WAR_ON = False
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)

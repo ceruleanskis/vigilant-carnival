@@ -40,8 +40,8 @@ def import_seed(seed_uuid: str) -> None:
 
 
 seed_from_env = os.getenv('GAME_SEED', None)
-seed = None
-seed_int = None
+seed: uuid.UUID = None
+seed_int: int = None
 if seed_from_env is None:
     generate_new_seed()
 else:
