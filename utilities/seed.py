@@ -10,6 +10,7 @@ import uuid
 def generate_new_seed() -> None:
     """
     Generate a new seed using uuid4. Sets the seed global value and its integer representation as seed_int.
+    
     :return:
     :rtype: None
     """
@@ -24,6 +25,7 @@ def import_seed(seed_uuid: str) -> None:
     """
     Given a uuid str (with or without dashes), sets the seed global value to the seed_uuid and its integer
     representation as seed_int.
+
     :param seed_uuid: A string representing a uuid value
     :type seed_uuid: str
     :return:

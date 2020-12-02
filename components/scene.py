@@ -3,7 +3,7 @@ from typing import Union
 
 import pygame
 
-import scenes.director
+import scenes
 
 
 class Scene(ABC):

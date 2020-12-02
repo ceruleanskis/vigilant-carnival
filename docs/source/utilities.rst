@@ -44,6 +44,13 @@ utilities.load\_data module
    :undoc-members:
    :show-inheritance:
 
+utilities.save\_manager module
+---------------------------------------
+
+.. automodule:: utilities.save_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 utilities.seed module
 ----------------------------

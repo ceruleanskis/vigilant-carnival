@@ -19,13 +19,13 @@ class SaveManager:
     def get_save_list() -> typing.List[typing.Dict]:
         """
         Get the list of saved games in SAVE_GAME_DIR
+
         :return: A list of dicts containing save game info.
         :rtype: dict: {
-        'path': str absolute path to file,
-        'modified': str last modified time represented as %c (locale datettime representation),
-        'modified_timestamp': float POSIX timestamp of last modified time,
-        'seed': str representing UUID game seed value
-        }
+            'path': str absolute path to file,
+            'modified': str last modified time represented as %c (locale datettime representation),
+            'modified_timestamp': float POSIX timestamp of last modified time,
+            'seed': str representing UUID game seed value}
         """
         save_list = []
         save_files = glob.glob(f'{utilities.constants.SAVE_GAME_DIR}/*{utilities.constants.SAVE_GAME_EXT}')
@@ -49,6 +49,7 @@ class SaveManager:
     def get_file_modified_time(path: str) -> dict[str, typing.Union[float]]:
         """
         Get the last modified time of a file at the given path.
+
         :param path: absolute path to file
         :type path: str
         :return: a dict containing str last modified time represented as %c and POSIX timestamp
@@ -65,6 +66,7 @@ class SaveManager:
     def load_game(file_path: str, import_seed: bool = True) -> typing.Dict:
         """
         Loads JSON data from a file path into an object.
+
         :param file_path: absolute path to file
         :type file_path:
         :param import_seed: whether to import a seed into the game or not
@@ -82,6 +84,7 @@ class SaveManager:
     def save_game(json_data: typing.Dict) -> str:
         """
         Saves the given JSON data to a file in SAVE_GAME_DIR.
+
         :param json_data: game data dict
         :type json_data: dict
         :return: the name of the file that was saved (relative to SAVE_GAME_DIR)
@@ -104,6 +107,7 @@ class SaveManager:
     def get_screenshot_file_path(save_as_name: str):
         """
         Constructs the path of the file to save a screenshot of the saved game to.
+
         :param save_as_name: the name of the dave game data file
         :type save_as_name: str
         :return:
@@ -116,6 +120,7 @@ class SaveManager:
         """
         Screenshots and saves an image to the saved game dir with the name of the saved game file
         (but instead extension of png) given a pygame surface to screenshot.
+
         :param save_as_name: the name of the dave game data file
         :type save_as_name: str
         :param surface: the pygame surface to screenshot
@@ -128,6 +133,7 @@ class SaveManager:
     def get_save_names_from_save_list() -> [str]:
         """
         Returns the list of names of the saved game files relative to the SAVE_GAME_DIR.
+
         :return: list of save names
         :rtype: list[str]
         """
@@ -138,6 +144,7 @@ class SaveManager:
     def get_save_name(num: int = 0) -> str:
         """
         Iterate the save game name using number given (to avoid duplicate save names)
+
         :param num: the index of saved games
         :type num: int
         :return: filename appended with number
