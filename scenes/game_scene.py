@@ -22,6 +22,7 @@ class GameScene(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
+        self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
 
         if not loaded_json:
@@ -59,8 +60,7 @@ class GameScene(Scene):
             'map': self.tile_map.to_json()
         }
 
-        with open('data.json', 'w') as outfile:
-            json.dump(json_data, outfile)
+        self.last_saved = utilities.save_manager.SaveManager.save_game(json_data)
 
     def set_player_pos(self, player_pos: utilities.ship_generator.Coordinate = None):
         if player_pos is None:
