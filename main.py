@@ -5,16 +5,15 @@ import utilities.constants
 import utilities.game_utils
 import utilities.seed
 from components.scene import Scene
-from scenes.title_scene import TitleScene
+from scenes.menu_scene import MenuScene
 
 
-
-def run_game(starting_scene: Scene = TitleScene()) -> None:
+def run_game(starting_scene: Scene = MenuScene()) -> None:
     """
     Initializes game window and sets starting scene.
 
     :param starting_scene: the scene to begin the game with
-    :type starting_scene: TitleScene
+    :type starting_scene: MenuScene
     :return: None
     :rtype: None
     """

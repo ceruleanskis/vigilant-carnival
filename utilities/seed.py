@@ -13,6 +13,7 @@ def generate_new_seed() -> None:
     :return:
     :rtype: None
     """
+    print('Generating new seed...')
     global seed
     global seed_int
     seed = uuid.uuid4()
@@ -29,10 +30,12 @@ def import_seed(seed_uuid: str) -> None:
     :rtype: None
     """
     try:
+        print('Importing seed...')
         global seed
         global seed_int
         seed = uuid.UUID(seed_uuid)
         seed_int = seed.int
+        print(f'Imported seed {seed}')
     except Exception as err:
         print(f'Importing seed from env failed: {err} \n'
               f'Generating new seed...')

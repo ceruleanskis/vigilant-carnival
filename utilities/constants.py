@@ -2,6 +2,9 @@ import os
 
 VERSION = "0.1.0"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SAVE_GAME_DIR = f'{ROOT_DIR}/saves'
+SAVE_GAME_PREFIX = 'data'
+SAVE_GAME_EXT = '.save.json'
 
 DISPLAY_WIDTH = 1920
 DISPLAY_HEIGHT = 1080
@@ -18,6 +21,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 GRAY = (200, 200, 200)
+
+DARK_BLUE = (100, 130, 161)
 
 TILES = []
 TILE_FLOOR = 'floor'

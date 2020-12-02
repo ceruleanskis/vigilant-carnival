@@ -1,14 +1,13 @@
-import json
 import random
-from typing import Union
 
 import pygame
 
 import components.map
-import scenes.title_scene as title_scene
+import scenes.menu_scene
 import utilities.constants
 import utilities.fov
 import utilities.load_data
+import utilities.save_manager
 import utilities.seed
 import utilities.ship_generator
 from components.scene import Scene
@@ -18,19 +17,23 @@ random.seed(utilities.seed.seed_int)
 
 
 class GameScene(Scene):
-    def __init__(self):
+    def __init__(self, loaded_json=None):
         Scene.__init__(self)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
+        self.loaded_player_pos = None
+        self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
 
-        # self.tile_map = components.map.TileMap(
-        #     ((utilities.constants.DISPLAY_WIDTH - utilities.constants.TILE_SIZE) // utilities.constants.TILE_SIZE) + 1,
-        #     (utilities.constants.DISPLAY_HEIGHT - utilities.constants.TILE_SIZE) // utilities.constants.TILE_SIZE)
-        #
-        # self.tile_map.generate_map()
-        #
+        if not loaded_json:
+            width = ((utilities.constants.DISPLAY_WIDTH - utilities.constants.TILE_SIZE)
+                     // utilities.constants.TILE_SIZE) + 1
+            height = (utilities.constants.DISPLAY_HEIGHT - utilities.constants.TILE_SIZE) \
+                     // utilities.constants.TILE_SIZE
+            self.tile_map = components.map.TileMap(width, height)
 
-        self.load()
+            self.tile_map.generate_map()
+        else:
+            self.load(loaded_json)
 
         for y in range(self.tile_map.height):
             for x in range(self.tile_map.width):
@@ -41,11 +44,7 @@ class GameScene(Scene):
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
 
-    def load(self):
-        with open(f'{utilities.constants.ROOT_DIR}/data.json') as json_file:
-            json_data = json.load(json_file)
-
-        utilities.seed.import_seed(json_data['seed'])
+    def load(self, json_data):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
         player_pos = json_data['player_pos']
@@ -76,15 +75,13 @@ class GameScene(Scene):
             self.player.handle_input(events, pressed_keys)
             self.did_move_to_blocked()
             self.update_fov()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                self.save()
-                self.switch_scene(title_scene.TitleScene())
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.switch_scene(scenes.menu_scene.MenuScene(title=False))
 
     def did_move_to_blocked(self):
         collision_list = pygame.sprite.spritecollide(self.player, self.map_sprites, False)
         for tile in collision_list:
             if tile.type != 'floor' and tile.type != 'open_door':
-                # pass
                 if tile.type == 'door':
                     tile.type = 'open_door'
                     tile.image_str = utilities.load_data.TILE_DATA[tile.type]['image']
@@ -101,30 +98,14 @@ class GameScene(Scene):
                                   self.tile_map.is_blocked_at_location)
 
     def update(self):
-        # pygame.display.update()
         pass
 
     def render(self, screen):
-        screen.fill((0, 0, 0))
+        self.surface.fill((0, 0, 0))
         self.tile_map.render(screen)
         for entity in self.all_sprites:
-            screen.blit(entity.surface, entity.rect)
+            self.surface.blit(entity.surface, entity.rect)
             if utilities.constants.COORDINATE_DISPLAY and isinstance(entity, components.map.Tile):
-                screen.blit(entity.text, entity.rect)
+                self.surface.blit(entity.text, entity.rect)
 
-
-class GameScene2(Scene):
-    def __init__(self):
-        Scene.__init__(self)
-
-    def handle_input(self, events, pressed_keys):
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                self.switch_scene(title_scene.TitleScene())
-
-    def update(self):
-        pass
-
-    def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
-        # The game scene is just a blank blue screen
-        screen.fill((255, 0, 255))
+        screen.blit(self.surface, self.surface.get_rect())
