@@ -3,10 +3,11 @@ from typing import Union
 
 import pygame
 
+import scenes.director
+
 
 class Scene(ABC):
     def __init__(self):
-        self.next = self
         super().__init__()
 
     @abstractmethod
@@ -22,7 +23,7 @@ class Scene(ABC):
         pass
 
     def switch_scene(self, next_scene):
-        self.next = next_scene
+        scenes.director.push(next_scene)
 
     def terminate(self):
-        self.switch_scene(None)
+        scenes.director.pop()
