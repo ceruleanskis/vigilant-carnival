@@ -12,10 +12,10 @@ scenes.game\_scene module
    :undoc-members:
    :show-inheritance:
 
-scenes.title\_scene module
+scenes.menu\_scene module
 --------------------------
 
-.. automodule:: scenes.title_scene
+.. automodule:: scenes.menu_scene
    :members:
    :undoc-members:
    :show-inheritance:
