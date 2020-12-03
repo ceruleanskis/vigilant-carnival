@@ -1,3 +1,4 @@
+import random
 from typing import Union, Tuple
 
 import pygame
@@ -23,6 +24,8 @@ class Creature(Entity):
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
         self.previous_x_pos = self.x_pos
         self.previous_y_pos = self.y_pos
+        self.action_points = 0
+        self.speed = 100
 
     def move(self, direction: Tuple[int, int]):
         self.previous_x_pos = self.x_pos
@@ -43,5 +46,10 @@ class Creature(Entity):
         self.teleport(self.x_pos, self.y_pos)
         self.update()
 
+    def move_randomly(self):
+        directions = ((-1, 0), (1, 0), (0, -1), (0, 1))
+        self.move(random.choice(directions))
+        return 100
+
     def take_turn(self):
-        raise NotImplementedError
+        return self.move_randomly()

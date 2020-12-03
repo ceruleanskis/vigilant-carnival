@@ -363,7 +363,6 @@ class ShipGenerator:
             self.paint_room_floor(room)
         self.paint_corridors()
 
-        self.print_map()
         self.level_array = self.ascii_to_tile_type(self.level_array)
 
     def try_create_room(self, num_tries: int = 100):
