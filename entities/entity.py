@@ -1,3 +1,4 @@
+import typing
 from abc import abstractmethod
 from typing import Union
 
@@ -7,14 +8,16 @@ import pygame
 class Entity(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.blocks = True
 
-    def handle_input(self, events, pressed_keys):
-        pass
-
-    @abstractmethod
     def update(self):
-        pass
+        super().update()
 
     @abstractmethod
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         pass
+
+
+class EntityGroup(pygame.sprite.Group):
+    def __init__(self, *entities: typing.Union[Entity, typing.Sequence[Entity]]):
+        super().__init__(*entities)

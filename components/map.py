@@ -52,9 +52,6 @@ class Tile(entities.entity.Entity):
             'blocks': self.blocks
         }
 
-    def update(self):
-        pass
-
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         pass
 
@@ -195,13 +192,14 @@ class TileMap:
     def set_tile_types(self):
         for y in range(self.height):
             for x in range(self.width):
-                self.tile_map[x][y].type = self.level_array[x][y]
+                current_tile: Tile = self.tile_map[x][y]
+                current_tile.type = self.level_array[x][y]
+                current_tile.blocks = utilities.load_data.TILE_DATA[current_tile.type]['blocks']
 
     def random_coord_in_room(self, room: utilities.ship_generator.Rectangle):
         coord: utilities.ship_generator.Coordinate = random.choice(room.get_room_coords(without_corners=True))
         tile: Tile = self.tile_map[coord.x][coord.y]
         if room.includes_point(coord) and tile.type != 'wall':
-            print(f'{tile.type}, {coord}')
             return coord
         else:
             return self.random_coord_in_room(room)
@@ -223,7 +221,7 @@ class TileMap:
 
     def is_blocked_at_location(self, x: int, y: int) -> bool:
         tile: Tile = self.tile_map[x][y]
-        return tile.type != 'floor' and tile.type != 'open_door'
+        return tile.blocks
 
     def set_room_visibility(self, room: utilities.ship_generator.Rectangle, visibility: bool, redraw: bool = False):
         for x in range(room.x, room.x + room.width):
