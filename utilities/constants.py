@@ -1,8 +1,12 @@
 import os
 
 VERSION = "0.1.0"
+GAME_NAME = "mygame"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SAVE_GAME_DIR = f'{ROOT_DIR}/saves'
+# todo: make platform agnostic (right now, it's linux only paths)
+USER_DIR = os.path.expanduser('~')
+APPLICATION_DATA = os.environ.get("XDG_DATA_HOME", )
+SAVE_GAME_DIR = f'{USER_DIR}/.local/share/{GAME_NAME}/saves'
 SAVE_GAME_PREFIX = 'data'
 SAVE_GAME_EXT = '.save.json'
 
