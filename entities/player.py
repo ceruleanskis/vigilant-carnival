@@ -1,38 +1,49 @@
+import typing
 from typing import Tuple
 
 import pygame
 
+import entities.actions.actions
 import entities.creature
 
 
 class Player(entities.creature.Creature):
 
     def __init__(self):
-        super().__init__(name='player')
+        super().__init__('player')
         self.action_points = 0
         self.speed = 100
+        self.current_action = None
 
-    def handle_input(self, events, pressed_keys)-> str:
+    def handle_input(self, events, pressed_keys) -> typing.Union[entities.actions.actions.BaseAction, None]:
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                return self.move((0, -1))
+                self.current_action = entities.actions.actions.MoveAction(self, (0, -1))
+                return self.current_action
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                return self.move((0, 1))
+                self.current_action = entities.actions.actions.MoveAction(self, (0, 1))
+                return self.current_action
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                return self.move((-1, 0))
+                self.current_action = entities.actions.actions.MoveAction(self, (-1, 0))
+                return self.current_action
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                return self.move((1, 0))
+                self.current_action = entities.actions.actions.MoveAction(self, (1, 0))
+                return self.current_action
             elif event.type == pygame.JOYHATMOTION:
                 if event.value == (0, 1):  # up d-pad
-                    return self.move((0, -1))
+                    self.current_action = entities.actions.actions.MoveAction(self, (0, -1))
+                    return self.current_action
                 elif event.value == (0, -1):  # down d-pad
-                    return self.move((0, 1))
+                    self.current_action = entities.actions.actions.MoveAction(self, (0, 1))
+                    return self.current_action
                 elif event.value == (-1, 0):  # left d-pad
-                    return self.move((-1, 0))
+                    self.current_action = entities.actions.actions.MoveAction(self, (-1, 0))
+                    return self.current_action
                 elif event.value == (1, 0):  # right d-pad
-                    return self.move((1, 0))
+                    self.current_action = entities.actions.actions.MoveAction(self, (1, 0))
+                    return self.current_action
                 else:
-                    pass
+                    return None
 
     def move(self, direction: Tuple[int, int]):
         super(Player, self).move(direction)
@@ -49,7 +60,8 @@ class Player(entities.creature.Creature):
         #
         # if self.rect.bottom >= SCREEN_HEIGHT:
         #     self.rect.bottom = SCREEN_HEIGHT
-        return 'move'
 
-    def take_turn(self):
-        return 100
+    def take_turn(self) -> int:
+        cost = self.current_action.perform()
+        self.current_action = None
+        return cost

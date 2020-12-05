@@ -83,31 +83,19 @@ class GameScene(Scene):
         self.player.y_pos = player_pos.y
         self.player.teleport(self.player.x_pos, self.player.y_pos)
 
+    def update_creature_parent(self):
+        for creature in self.creatures:
+            creature.parent_scene = self
+
     def handle_input(self, events, pressed_keys):
         for event in events:
-            action = self.player.handle_input(events, pressed_keys)
-            if not self.did_move_to_blocked(self.player) and action == 'move':
+            self.player.handle_input(events, pressed_keys)
+            if self.player.current_action is not None:
+                self.update_creature_parent()
                 systems.time_manager.tick()
-                for creature in self.creatures:
-                    self.did_move_to_blocked(creature)
             self.update_fov()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.switch_scene(scenes.menu_scene.MenuScene(title=False))
-
-    def did_move_to_blocked(self, creature: Creature):
-        for other_creature in self.creatures:
-            if other_creature is not creature and creature.x_pos == other_creature.x_pos and creature.y_pos == other_creature.y_pos:
-                self.player.teleport(self.player.previous_x_pos, self.player.previous_y_pos)
-                return True
-
-        tile = self.tile_map.tile_map[creature.x_pos][creature.y_pos]
-        if tile.type != 'floor' and tile.type != 'open_door':
-            if tile.type == 'door':
-                tile.type = 'open_door'
-                tile.image_str = utilities.load_data.TILE_DATA[tile.type]['image']
-            else:
-                creature.teleport(creature.previous_x_pos, creature.previous_y_pos)
-                return True
 
     def update_fov(self):
         utilities.fov.fieldOfView(self.player.x_pos,

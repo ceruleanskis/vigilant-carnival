@@ -19,8 +19,8 @@ class TestSaveManager(unittest.TestCase):
         self.timestamp = date.timestamp()
         self.file_path = f'{utilities.constants.SAVE_GAME_DIR}/{self.save_name}'
         self.test_seed = 'de96922ddb784f1c80587a5c726a799a'
-        modTime = time.mktime(date.timetuple())
-        os.utime(f'{utilities.constants.SAVE_GAME_DIR}/{self.save_name}', (modTime, modTime))
+        mod_time = time.mktime(date.timetuple())
+        os.utime(f'{utilities.constants.SAVE_GAME_DIR}/{self.save_name}', (mod_time, mod_time))
 
     def tearDown(self) -> None:
         # delete all created files in test_data except test_data.save.json
