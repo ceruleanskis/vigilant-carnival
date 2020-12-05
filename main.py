@@ -3,9 +3,12 @@ import pygame
 import scenes.director
 import utilities.constants
 import utilities.game_utils
+import utilities.logsetup
 import utilities.seed
 from components.scene import Scene
 from scenes.menu_scene import MenuScene
+
+log = utilities.logsetup.log()
 
 
 def run_game(starting_scene: Scene = MenuScene()) -> None:

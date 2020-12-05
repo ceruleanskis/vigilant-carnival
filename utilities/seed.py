@@ -6,6 +6,10 @@ Checks for the env variable GAME_SEED; if not present, generates a new seed.
 import os
 import uuid
 
+import utilities.logsetup
+
+log = utilities.logsetup.log()
+
 
 def generate_new_seed() -> None:
     """
@@ -14,7 +18,7 @@ def generate_new_seed() -> None:
     :return:
     :rtype: None
     """
-    print('Generating new seed...')
+    log.info('Generating new seed...')
     global seed
     global seed_int
     seed = uuid.uuid4()
@@ -32,15 +36,15 @@ def import_seed(seed_uuid: str) -> None:
     :rtype: None
     """
     try:
-        print('Importing seed...')
+        log.info('Importing seed...')
         global seed
         global seed_int
         seed = uuid.UUID(seed_uuid)
         seed_int = seed.int
-        print(f'Imported seed {seed}')
+        log.info(f'Imported seed {seed}')
     except Exception as err:
-        print(f'Importing seed from env failed: {err} \n'
-              f'Generating new seed...')
+        log.warning(f'Importing seed from env failed: {err} \n'
+                    f'Generating new seed...')
         generate_new_seed()
 
 
@@ -50,7 +54,7 @@ seed_int: int = None
 if seed_from_env is None:
     generate_new_seed()
 else:
-    print(f'GAME_SEED: {seed_from_env}')
+    log.info(f'GAME_SEED: {seed_from_env}')
     import_seed(seed_from_env)
 
-print(f'Seed: {seed}, {seed_int}')
+log.info(f'Seed: {seed}, {seed_int}')

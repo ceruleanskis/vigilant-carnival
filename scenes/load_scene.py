@@ -8,8 +8,10 @@ import scenes.game_scene
 import utilities.constants
 import utilities.game_utils as game_utils
 import utilities.save_manager
+import utilities.logsetup
 from components.scene import Scene
 
+log = utilities.logsetup.log()
 
 class LoadScene(Scene):
     """
@@ -57,6 +59,7 @@ class LoadScene(Scene):
 
     def load(self):
         file = self.menu_items[self.selected_menu_item]
+        log.info(f'Loaded game from {self.selected_menu_item}.')
         return utilities.save_manager.SaveManager.load_game(file['path'])
 
     def update(self):
@@ -71,6 +74,7 @@ class LoadScene(Scene):
             self.displayed_screenshot = pygame.transform.scale(self.displayed_screenshot, (
                 self.screenshot_width, self.screenshot_height))
         except Exception as err:
+            log.error(err)
             self.displayed_screenshot = pygame.surface.Surface((self.screenshot_width, self.screenshot_height))
             self.displayed_screenshot.fill(utilities.constants.DARK_BLUE)
 

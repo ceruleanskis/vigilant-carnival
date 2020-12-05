@@ -8,6 +8,9 @@ import pygame
 
 import utilities.constants
 import utilities.seed
+import utilities.logsetup
+
+log = utilities.logsetup.log()
 
 
 class SaveManager:
@@ -78,6 +81,7 @@ class SaveManager:
             json_data = json.load(json_file)
         if import_seed:
             utilities.seed.import_seed(json_data['seed'])
+
         return json_data
 
     @staticmethod
@@ -100,6 +104,8 @@ class SaveManager:
         os.makedirs(os.path.dirname(save_as_path), exist_ok=True)
         with open(save_as_path, 'w') as outfile:
             json.dump(json_data, outfile)
+
+        log.info(f'Saved game to {save_as_path}.')
 
         return save_as_name
 
@@ -128,6 +134,7 @@ class SaveManager:
         """
         save_as_screenshot_name = SaveManager.get_screenshot_file_path(save_as_name)
         pygame.image.save(surface, save_as_screenshot_name) # pragma: no cover
+        log.info(f'Saved screenshot to {save_as_screenshot_name}')
 
     @staticmethod
     def get_save_names_from_save_list() -> [str]:

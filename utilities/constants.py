@@ -2,18 +2,26 @@ import os
 
 VERSION = "0.1.0"
 GAME_NAME = "mygame"
+DEBUG = True
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # todo: make platform agnostic (right now, it's linux only paths)
 USER_DIR = os.path.expanduser('~')
 APPLICATION_DATA = os.environ.get("XDG_DATA_HOME", )
-SAVE_GAME_DIR = f'{USER_DIR}/.local/share/{GAME_NAME}/saves'
+LOCAL_SHARE = f'{USER_DIR}/.local/share'
+
+if DEBUG:
+    LOG_DIR = 'logs'
+    SAVE_GAME_DIR = 'saves'
+else:
+    SAVE_GAME_DIR = f'{LOCAL_SHARE}/{GAME_NAME}/saves'
+    LOG_DIR = f'{LOCAL_SHARE}/{GAME_NAME}/logs'
+
 SAVE_GAME_PREFIX = 'data'
 SAVE_GAME_EXT = '.save.json'
 
 DISPLAY_WIDTH = 1920
 DISPLAY_HEIGHT = 1080
 FPS = 60
-DEBUG = True
 GRID_DISPLAY = False
 COORDINATE_DISPLAY = False
 FPS_DISPLAY = True

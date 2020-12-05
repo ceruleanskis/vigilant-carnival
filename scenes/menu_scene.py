@@ -3,9 +3,12 @@ import scenes.game_scene as game_scene
 import scenes.load_scene as load_scene
 import scenes.save_scene as save_scene
 import utilities.constants
+import utilities.logsetup
 import utilities.save_manager
 from components.scene import Scene
 from utilities.game_utils import *
+
+logger = utilities.logsetup.log()
 
 pygame.joystick.init()
 try:
@@ -15,10 +18,10 @@ try:
 
     # Check init status
     if j.get_init() == 1:
-        print("Joystick is initialized")
+        logger.info("Joystick is initialized")
 except pygame.error as err:
-    print(err)
-    print("Joystick is NOT initialized")
+    logger.warning(err)
+    logger.warning("Joystick is NOT initialized")
 
 
 class MenuScene(Scene):
