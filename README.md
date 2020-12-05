@@ -2,6 +2,7 @@
 
 vigilant-carnival (not a real name, the game is currently untitled so this is just a codename)
 is a sci-fi roguelike developed with python 3.9 and [pygame](https://github.com/pygame/pygame).
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your 
@@ -33,6 +34,14 @@ Once the requirements are installed, from your venv, run from the main directory
 ```
 python main.py
 ```
+
+#### Usage
+
+Saved games are located in the main directory under `saves` when DEBUG (`constants.py`) is `True`.
+Otherwise they are located in `~/.local/share/mygame/saves`.
+
+Logs are located in the main directory under `logs` when DEBUG (`constants.py`) is `True`.
+Otherwise they are located in `~/.local/share/mygame/logs`.
 
 ## Running the tests
 
