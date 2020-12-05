@@ -2,9 +2,11 @@ import itertools
 import random
 import timeit
 import typing
+import utilities.logsetup
 from typing import List
 
 import utilities.load_data
+logger = utilities.logsetup.log()
 
 
 class Coordinate:
@@ -306,9 +308,9 @@ class ShipGenerator:
                             old_room = new_room
 
                 return old_room
-            else:
-                print('slide direction not implemented')
-                pass
+        else:
+            logger.error('slide direction not implemented')
+            raise NotImplementedError
 
     def create_room(self):
         # vertical
@@ -363,7 +365,6 @@ class ShipGenerator:
             self.paint_room_floor(room)
         self.paint_corridors()
 
-        self.print_map()
         self.level_array = self.ascii_to_tile_type(self.level_array)
 
     def try_create_room(self, num_tries: int = 100):
@@ -493,7 +494,7 @@ if __name__ == '__main__':
     ).get_ship()
     stop = timeit.default_timer()
     execution_time = stop - start
-    print(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
+    logger.info(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
 
     rect = Rectangle(0, 0, 3, 3)
     rect_2 = Rectangle(0, 0, 3, 3)

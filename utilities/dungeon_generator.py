@@ -11,8 +11,11 @@ work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """
 
 from __future__ import print_function
+
 import random
+
 import utilities.seed
+
 random.seed(utilities.seed.seed_int)
 
 CHARACTER_TILES = {'stone': ' ',

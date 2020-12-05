@@ -9,8 +9,12 @@ import utilities.constants
 import utilities.dungeon_generator
 import utilities.game_utils
 import utilities.load_data
+import utilities.logsetup
+import utilities.logsetup
 import utilities.seed
 import utilities.ship_generator
+
+log = utilities.logsetup.log()
 
 random.seed(utilities.seed.seed_int)
 
@@ -201,7 +205,7 @@ class TileMap:
         coord: utilities.ship_generator.Coordinate = random.choice(room.get_room_coords(without_corners=True))
         tile: Tile = self.tile_map[coord.x][coord.y]
         if room.includes_point(coord) and tile.type != 'wall':
-            print(f'{tile.type}, {coord}')
+            log.info(f'{tile.type}, {coord}')
             return coord
         else:
             return self.random_coord_in_room(room)
