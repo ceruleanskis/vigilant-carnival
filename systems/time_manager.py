@@ -26,6 +26,5 @@ def tick():
             while obj.action_points > 0:
                 cost = obj.take_turn()
                 obj.action_points -= cost
-                # log.debug(f"{obj.name} took turn, cost: {cost}, remaining: {obj.action_points}")
     turns += 1
     log.debug(f"tick, turn:{turns}")

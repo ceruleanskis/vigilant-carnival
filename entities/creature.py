@@ -32,6 +32,15 @@ class Creature(entities.entity.Entity):
         self.current_action = entities.actions.actions.RandomMoveAction(self)
         self.parent_scene: scenes.game_scene.GameScene = None
 
+    def to_json(self):
+        return {
+            'name': self.name,
+            'x_pos': self.x_pos,
+            'y_pos': self.y_pos,
+            'action_points': self.action_points,
+            'speed': self.speed
+        }
+
     def move(self, direction: Tuple[int, int]):
         self.previous_x_pos = self.x_pos
         self.previous_y_pos = self.y_pos

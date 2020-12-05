@@ -48,7 +48,6 @@ class GameScene(Scene):
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
 
-        self.creatures = []
         creature = Creature('floating_eye')
         self.all_sprites.add(creature)
         random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
@@ -65,11 +64,18 @@ class GameScene(Scene):
         self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
 
     def save(self):
+        creatures_self_copy = self.creatures.copy()
+        creatures_self_copy.remove(self.player)
+        creature_data = []
+        for creature in creatures_self_copy:
+            creature_data.append(creature.to_json())
+
         json_data = {
             'version': utilities.constants.VERSION,
             'seed': utilities.seed.seed.hex,
             'level': 1,
             'player_pos': [self.player.x_pos, self.player.y_pos],
+            'creatures': creature_data,
             'map': self.tile_map.to_json()
         }
 
