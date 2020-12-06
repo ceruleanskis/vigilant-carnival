@@ -54,7 +54,7 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
                 filtered_events.append(event)
 
         active_scene.handle_input(filtered_events, pressed_keys)
-        # active_scene.update()
+        active_scene.update()
         active_scene.render(screen)
         show_fps(screen, clock, font)
         pygame.display.flip()
