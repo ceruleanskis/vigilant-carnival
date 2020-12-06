@@ -1,20 +1,22 @@
 import pygame
 
+import scenes.director
 import utilities.constants
 import utilities.game_utils
+import utilities.logsetup
 import utilities.seed
 from components.scene import Scene
-from scenes.title_scene import TitleScene
+from scenes.menu_scene import MenuScene
 
-print(utilities.constants.ROOT_DIR)
+log = utilities.logsetup.log()
 
 
-def run_game(starting_scene: Scene = TitleScene()) -> None:
+def run_game(starting_scene: Scene = MenuScene()) -> None:
     """
     Initializes game window and sets starting scene.
 
     :param starting_scene: the scene to begin the game with
-    :type starting_scene: TitleScene
+    :type starting_scene: MenuScene
     :return: None
     :rtype: None
     """
@@ -26,9 +28,13 @@ def run_game(starting_scene: Scene = TitleScene()) -> None:
     font = pygame.font.SysFont(None, 48)
 
     active_scene: Scene = starting_scene
+    scenes.director.push(active_scene)
 
     # Main loop
-    while active_scene is not None:
+    while True:
+        active_scene = scenes.director.top()
+        if not active_scene:
+            break
         pressed_keys = pygame.key.get_pressed()
 
         filtered_events = []
@@ -39,21 +45,18 @@ def run_game(starting_scene: Scene = TitleScene()) -> None:
                 quit_attempt = True
             elif event.type == pygame.KEYDOWN:
                 alt_pressed = pressed_keys[pygame.K_LALT] or pressed_keys[pygame.K_RALT]
-                if event.key == pygame.K_ESCAPE:
-                    quit_attempt = True
-                elif event.key == pygame.K_F4 and alt_pressed:
+                if event.key == pygame.K_F4 and alt_pressed:
                     quit_attempt = True
 
             if quit_attempt:
-                active_scene.terminate()
+                return
             else:
                 filtered_events.append(event)
 
         active_scene.handle_input(filtered_events, pressed_keys)
-        # active_scene.update()
+        active_scene.update()
         active_scene.render(screen)
         show_fps(screen, clock, font)
-        active_scene = active_scene.next
         pygame.display.flip()
         clock.tick(utilities.constants.FPS)
 

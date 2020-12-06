@@ -2,9 +2,11 @@ import itertools
 import random
 import timeit
 import typing
+import utilities.logsetup
 from typing import List
 
 import utilities.load_data
+logger = utilities.logsetup.log()
 
 
 class Coordinate:
@@ -14,6 +16,12 @@ class Coordinate:
 
     def to_tuple(self) -> typing.Tuple[int, int]:
         return self.x, self.y
+
+    def to_json(self):
+        return {
+            'x': self.x,
+            'y': self.y
+        }
 
     def __eq__(self, other):
         """Overrides the default implementation"""
@@ -49,13 +57,13 @@ class Triangle:
 
 
 class Rectangle:
-    def __init__(self, x: int, y: int, w: int, h: int):
+    def __init__(self, x: int, y: int, width: int, h: int):
         self.x = x
         self.y = y
-        self.width = w
+        self.width = width
         self.height = h
-        self.area = w * h
-        self.room_repr: typing.List[int] = [x, y, w, h]
+        self.area = width * h
+        self.room_repr: typing.List[int] = [x, y, width, h]
         self.corners = [self.top_right_corner(), self.bottom_left_corner(), self.top_left_corner(),
                         self.bottom_right_corner()]
         self.wall_coordinates: typing.List[Coordinate] = list(
@@ -65,6 +73,18 @@ class Rectangle:
             int(self.x + (0.5 * self.width)),
             int(self.y + (0.5 * self.height))
         )
+
+    @staticmethod
+    def from_json(json_obj: typing.Dict) -> 'Rectangle':
+        return Rectangle(json_obj['x'], json_obj['y'], json_obj['width'], json_obj['height'])
+
+    def to_json(self):
+        return {
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height
+        }
 
     def get_room_coords(self, without_corners=False) -> typing.List[Coordinate]:
         room_coords: typing.List[Coordinate] = []
@@ -200,6 +220,7 @@ class Rectangle:
         return wall
 
 
+
 class ShipGenerator:
     def __init__(self, map_width: int, map_height: int,
                  orientation: typing.Union[Orientation.vertical, Orientation.horizontal], bridge_width: int,
@@ -287,9 +308,9 @@ class ShipGenerator:
                             old_room = new_room
 
                 return old_room
-            else:
-                print('slide direction not implemented')
-                pass
+        else:
+            logger.error('slide direction not implemented')
+            raise NotImplementedError
 
     def create_room(self):
         # vertical
@@ -344,8 +365,7 @@ class ShipGenerator:
             self.paint_room_floor(room)
         self.paint_corridors()
 
-        self.print_map()
-        self.ascii_to_tile_type()
+        self.level_array = self.ascii_to_tile_type(self.level_array)
 
     def try_create_room(self, num_tries: int = 100):
         for i in range(num_tries):
@@ -433,11 +453,28 @@ class ShipGenerator:
                 return obj
         raise Exception("ascii not found; check tiles.json")
 
-    def ascii_to_tile_type(self):
+    @staticmethod
+    def get_tile_ascii(json_object, tile_type: str):
+        for obj in json_object:
+            if obj == tile_type:
+                return json_object[obj]['ascii']
+        raise Exception(f"tile type {tile_type} not found; check tiles.json")
+
+    @staticmethod
+    def ascii_to_tile_type(level_array: typing.List[typing.List[any]]):
         tile_data = utilities.load_data.TILE_DATA
-        for y in range(self.map_height):
-            for x in range(self.map_width):
-                self.level_array[x][y] = self.get_tile_type(tile_data, self.level_array[x][y])
+        for y in range(len(level_array[0])):
+            for x in range(len(level_array)):
+                level_array[x][y] = ShipGenerator.get_tile_type(tile_data, level_array[x][y])
+        return level_array
+
+    @staticmethod
+    def tile_type_to_ascii(level_array: typing.List[typing.List[any]]):
+        tile_data = utilities.load_data.TILE_DATA
+        for y in range(len(level_array[0])):
+            for x in range(len(level_array)):
+                level_array[x][y] = ShipGenerator.get_tile_ascii(tile_data, level_array[x][y])
+        return level_array
 
     def reflect_room(self, room):
         reflected_coord = self.reflect_coord(Coordinate(room.x, room.y))
@@ -457,7 +494,7 @@ if __name__ == '__main__':
     ).get_ship()
     stop = timeit.default_timer()
     execution_time = stop - start
-    print(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
+    logger.info(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
 
     rect = Rectangle(0, 0, 3, 3)
     rect_2 = Rectangle(0, 0, 3, 3)

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# pyi-makespec --onefile -n "mygame" --add-data "assets:assets" main.py
+pyinstaller mygame.spec -y --clean -n "mygame" --onefile

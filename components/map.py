@@ -1,4 +1,5 @@
 import random
+import typing
 from typing import Union, List, Dict
 
 import pygame
@@ -8,8 +9,12 @@ import utilities.constants
 import utilities.dungeon_generator
 import utilities.game_utils
 import utilities.load_data
+import utilities.logsetup
+import utilities.logsetup
 import utilities.seed
 import utilities.ship_generator
+
+log = utilities.logsetup.log()
 
 random.seed(utilities.seed.seed_int)
 
@@ -32,17 +37,24 @@ class Tile(entities.entity.Entity):
         self.blocks = False
 
     @staticmethod
-    def from_json(json: Dict, x, y) -> 'Tile':
-        tile = Tile(0, 0)
-        tile.image_str = json['image']
-        tile.type = json['name']
-        tile.blocks = json['blocks']
-        tile.x = x
-        tile.y = y
+    def from_json(json_obj: Dict, x=None, y=None) -> 'Tile':
+        if x is None and y is None:
+            x = json_obj['x']
+            y = json_obj['y']
+        tile = Tile(x, y)
+        tile.type = json_obj['name']
+        tile.blocks = json_obj['blocks']
+
         return tile
 
-    def update(self):
-        pass
+    def to_json(self):
+        return {
+            'x': self.x,
+            'y': self.y,
+            'name': self.type,
+            'visible': self.visible,
+            'blocks': self.blocks
+        }
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         pass
@@ -50,12 +62,14 @@ class Tile(entities.entity.Entity):
 
 class TileMap:
     def __init__(self, width, height):
-        floor_tile = utilities.load_data.TILE_DATA['floor']
         self.width = width
         self.height = height
-        self.tile_map = [[Tile.from_json(floor_tile, x, y)
-                          for x in range(self.width)]
-                         for y in range(self.height)]
+
+    def generate_map(self):
+        floor_tile = utilities.load_data.TILE_DATA['floor']
+        self.tile_map: typing.List[typing.List[Tile]] = [[Tile.from_json(floor_tile, x, y)
+                                                          for x in range(self.width)]
+                                                         for y in range(self.height)]
 
         self.ship_generator: utilities.ship_generator.ShipGenerator = utilities.ship_generator.ShipGenerator(
             map_width=self.width,
@@ -71,12 +85,56 @@ class TileMap:
         self.tile_map = list(map(list, zip(*self.tile_map)))[::1]
         self.room_list = self.ship_generator.rooms
         self.set_tile_types()
-        self.set_bitmask_value()
+
         self.starting_room = random.choice(self.room_list)
 
+        self.set_bitmask_value()
         if not utilities.constants.FOG_OF_WAR_ON:
             self.reveal_map()
 
+        self.draw_map()
+
+    @staticmethod
+    def tile_list_to_json(tile_list: typing.List[typing.List[Tile]]) -> typing.List[typing.List[typing.Dict]]:
+        json_list: typing.List[typing.List[typing.Dict]] = [[{} for y in range(len(tile_list[0]))] for x in
+                                                            range(len(tile_list))]
+        for y in range(len(tile_list[0])):
+            for x in range(len(tile_list)):
+                json_list[x][y] = tile_list[x][y].to_json()
+        return json_list
+
+    @staticmethod
+    def tile_list_from_json(json_list: typing.List[typing.List[Dict]]) -> typing.List[typing.List[Tile]]:
+        tile_list: typing.List[typing.List[Tile]] = [[Tile(x, y) for y in range(len(json_list[0]))] for x in
+                                                     range(len(json_list))]
+        for y in range(len(json_list[0])):
+            for x in range(len(json_list)):
+                tile_list[x][y] = Tile.from_json(json_list[x][y])
+        return tile_list
+
+    def to_json(self):
+        return {
+            'width': self.width,
+            'height': self.height,
+            'tile_map': TileMap.tile_list_to_json(self.tile_map),
+            'room_list': [room.to_json() for room in self.room_list],
+            'starting_room': self.starting_room.to_json()
+        }
+
+    @staticmethod
+    def from_json(json_obj: typing.Dict) -> 'TileMap':
+        width = json_obj['width']
+        height = json_obj['height']
+        tile_map = TileMap(width, height)
+        tile_map.tile_map = TileMap.tile_list_from_json(json_obj['tile_map'])
+        tile_map.room_list = [utilities.ship_generator.Rectangle.from_json(rect) for rect in json_obj['room_list']]
+        tile_map.starting_room = utilities.ship_generator.Rectangle.from_json(json_obj['starting_room'])
+        return tile_map
+
+    def init_json_map(self):
+        self.set_bitmask_value()
+        if not utilities.constants.FOG_OF_WAR_ON:
+            self.reveal_map()
         self.draw_map()
 
     def set_bitmask_value(self):
@@ -138,20 +196,15 @@ class TileMap:
     def set_tile_types(self):
         for y in range(self.height):
             for x in range(self.width):
-                self.tile_map[x][y].type = self.level_array[x][y]
-
-    # def create_doors(self):
-    #     for room in self.room_list:
-    #         self.create_door(room.top_wall(), x_stable=False)
-    #         self.create_door(room.bottom_wall(), x_stable=False)
-    #         self.create_door(room.left_wall(), x_stable=True)
-    #         self.create_door(room.right_wall(), x_stable=True)
+                current_tile: Tile = self.tile_map[x][y]
+                current_tile.type = self.level_array[x][y]
+                current_tile.blocks = utilities.load_data.TILE_DATA[current_tile.type]['blocks']
 
     def random_coord_in_room(self, room: utilities.ship_generator.Rectangle):
         coord: utilities.ship_generator.Coordinate = random.choice(room.get_room_coords(without_corners=True))
         tile: Tile = self.tile_map[coord.x][coord.y]
         if room.includes_point(coord) and tile.type != 'wall':
-            print(f'{tile.type}, {coord}')
+            log.info(f'{tile.type}, {coord}')
             return coord
         else:
             return self.random_coord_in_room(room)
@@ -173,7 +226,7 @@ class TileMap:
 
     def is_blocked_at_location(self, x: int, y: int) -> bool:
         tile: Tile = self.tile_map[x][y]
-        return tile.type != 'floor' and tile.type != 'open_door'
+        return tile.blocks
 
     def set_room_visibility(self, room: utilities.ship_generator.Rectangle, visibility: bool, redraw: bool = False):
         for x in range(room.x, room.x + room.width):
@@ -201,34 +254,3 @@ class TileMap:
         if utilities.constants.GRID_DISPLAY:
             pygame.draw.rect(
                 current_tile.surface, utilities.constants.BLACK, current_tile.surface.get_rect(), 1)
-
-# class Circle:
-#     def __init__(self, x, y, h, k, r, width, height):
-#         self.x = x
-#         self.y = y
-#         self.h = h
-#         self.k = k
-#         self.r = r
-#         self.width = width
-#         self.height = height
-#         self.tiles = None
-#
-#         self.get_array()
-#
-#     def dist(self, x1, y1, x2, y2):
-#         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-#
-#     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
-#         for x in range(self.h - self.r, self.h + self.r + 1):
-#             for y in range(self.k - self.r, self.k + self.r + 1):
-#                 if self.dist(self.h, self.k, x, y) < self.r:
-#                     self.tiles[x][y].sprite.image = pygame.Surface(
-#                         (self.tiles[x][y].size, self.tiles[x][y].size))
-#                     self.tiles[x][y].sprite.image.fill((128, 45, 19))
-#                     self.tiles[x][y].sprite.rect = self.tiles[x][y].sprite.image.get_rect()
-#                     self.tiles[x][y].sprite.rect.x = self.tiles[x][y].x * utilities.constants.TILE_SIZE
-#                     self.tiles[x][y].sprite.rect.y = self.tiles[x][y].y * utilities.constants.TILE_SIZE
-#                     screen.blit(self.tiles[x][y].sprite.image, self.tiles[x][y].sprite.rect)
-#
-#     def get_array(self):
-#         self.tiles = [[Tile(x, y) for x in range(self.height)] for y in range(self.width)]
