@@ -8,6 +8,7 @@ import systems.time_manager
 import utilities.constants
 import utilities.fov
 import utilities.load_data
+import utilities.messages
 import utilities.save_manager
 import utilities.seed
 import utilities.ship_generator
@@ -16,11 +17,12 @@ from entities.creature import Creature
 from entities.player import Player
 
 random.seed(utilities.seed.seed_int)
-
+pygame.font.init()
 
 class GameScene(Scene):
     def __init__(self, loaded_json=None):
         Scene.__init__(self)
+        self.font = pygame.font.SysFont(None, 48)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
@@ -115,6 +117,22 @@ class GameScene(Scene):
     def update(self):
         pass
 
+    def render_message_log(self) -> pygame.surface.Surface:
+        message_log_surface = pygame.surface.Surface((utilities.constants.MESSAGE_LOG_WIDTH,
+                                                      utilities.constants.MESSAGE_LOG_HEIGHT))
+        message_log_surface.fill((60, 51, 154))
+        pygame.draw.rect(message_log_surface, (174, 228, 237), message_log_surface.get_rect().inflate(-10, -10), 3)
+
+        for i in range(len(utilities.messages.message_log.messages)):
+            message = utilities.messages.message_log.messages[i]
+            message_display = self.font.render(message.text, True, message.color)
+            message_display_rect = message_display.get_rect()
+            message_log_surface.blit(message_display, (10, utilities.constants.FONT_SIZE * i + 10,
+                                                       message_display_rect.width, message_display_rect.height
+                                                       ))
+
+        return message_log_surface
+
     def render(self, screen):
         self.surface.fill((0, 0, 0))
         self.tile_map.render(screen)
@@ -123,5 +141,11 @@ class GameScene(Scene):
             self.surface.blit(entity.surface, entity.rect)
             if utilities.constants.COORDINATE_DISPLAY and isinstance(entity, components.map.Tile):
                 self.surface.blit(entity.text, entity.rect)
+
+        self.surface.blit(self.render_message_log(),
+                          [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                           utilities.constants.MESSAGE_LOG_WIDTH,
+                           utilities.constants.MESSAGE_LOG_HEIGHT
+                           ])
 
         screen.blit(self.surface, self.surface.get_rect())
