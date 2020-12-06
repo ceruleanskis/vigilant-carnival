@@ -34,6 +34,7 @@ class GameScene(Scene):
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.creatures: typing.List[Creature] = []
+        self.time_manager = systems.time_manager.TimeManager()
 
         if not loaded_json:
             width = ((utilities.constants.DISPLAY_WIDTH - utilities.constants.TILE_SIZE)
@@ -60,7 +61,7 @@ class GameScene(Scene):
         self.creatures.append(self.player)
 
         for critter in self.creatures:
-            systems.time_manager.register(critter)
+            self.time_manager.register(critter)
 
         self.block_input = False
 
@@ -120,7 +121,7 @@ class GameScene(Scene):
                 self.player.handle_input(events, pressed_keys)
                 if self.player.current_action is not None:
                     self.update_creature_parent()
-                    systems.time_manager.tick()
+                    self.time_manager.tick()
                 self.update_fov()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
