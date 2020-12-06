@@ -1,4 +1,5 @@
 import random
+import typing
 
 import pygame
 
@@ -8,6 +9,7 @@ import systems.time_manager
 import utilities.constants
 import utilities.fov
 import utilities.load_data
+import utilities.logsetup
 import utilities.messages
 import utilities.save_manager
 import utilities.seed
@@ -16,19 +18,22 @@ from components.scene import Scene
 from entities.creature import Creature
 from entities.player import Player
 
+log = utilities.logsetup.log()
 random.seed(utilities.seed.seed_int)
 pygame.font.init()
+
 
 class GameScene(Scene):
     def __init__(self, loaded_json=None):
         Scene.__init__(self)
+        self.block_input = True
         self.font = pygame.font.SysFont(None, 48)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
-        self.creatures = []
+        self.creatures: typing.List[Creature] = []
 
         if not loaded_json:
             width = ((utilities.constants.DISPLAY_WIDTH - utilities.constants.TILE_SIZE)
@@ -38,32 +43,46 @@ class GameScene(Scene):
             self.tile_map = components.map.TileMap(width, height)
 
             self.tile_map.generate_map()
+            self.add_map_tiles_to_sprite_list()
+
+            # creature = Creature('floating_eye')
+            # self.all_sprites.add(creature)
+            # random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+            # creature.x_pos = random_pos.x
+            # creature.y_pos = random_pos.y
+            # self.creatures.extend([creature])
         else:
             self.load(loaded_json)
-
-        for y in range(self.tile_map.height):
-            for x in range(self.tile_map.width):
-                self.map_sprites.add(self.tile_map.tile_map[x][y])
-                self.all_sprites.add(self.tile_map.tile_map[x][y])
 
         self.player = Player()
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
+        self.creatures.append(self.player)
 
-        creature = Creature('floating_eye')
-        self.all_sprites.add(creature)
-        random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-        creature.x_pos = random_pos.x
-        creature.y_pos = random_pos.y
-        self.creatures.extend([self.player, creature])
         for critter in self.creatures:
             systems.time_manager.register(critter)
+
+        self.block_input = False
+
+    def add_map_tiles_to_sprite_list(self):
+        for y in range(self.tile_map.height):
+            for x in range(self.tile_map.width):
+                self.map_sprites.add(self.tile_map.tile_map[x][y])
+                self.all_sprites.add(self.tile_map.tile_map[x][y])
 
     def load(self, json_data):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
         player_pos = json_data['player_pos']
         self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
+
+        self.add_map_tiles_to_sprite_list()
+
+        if 'creatures' in json_data:
+            for creature_data in json_data['creatures']:
+                creature = Creature.from_json(creature_data)
+                self.all_sprites.add(creature)
+                self.creatures.append(creature)
 
     def save(self):
         creatures_self_copy = self.creatures.copy()
@@ -96,14 +115,15 @@ class GameScene(Scene):
             creature.parent_scene = self
 
     def handle_input(self, events, pressed_keys):
-        for event in events:
-            self.player.handle_input(events, pressed_keys)
-            if self.player.current_action is not None:
-                self.update_creature_parent()
-                systems.time_manager.tick()
-            self.update_fov()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.switch_scene(scenes.menu_scene.MenuScene(title=False))
+        if not self.block_input:
+            for event in events:
+                self.player.handle_input(events, pressed_keys)
+                if self.player.current_action is not None:
+                    self.update_creature_parent()
+                    systems.time_manager.tick()
+                self.update_fov()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.switch_scene(scenes.menu_scene.MenuScene(title=False))
 
     def update_fov(self):
         utilities.fov.fieldOfView(self.player.x_pos,

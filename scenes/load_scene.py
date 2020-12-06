@@ -59,7 +59,7 @@ class LoadScene(Scene):
 
     def load(self):
         file = self.menu_items[self.selected_menu_item]
-        log.info(f'Loaded game from {self.selected_menu_item}.')
+        log.info(f'Loaded game from {file}.')
         return utilities.save_manager.SaveManager.load_game(file['path'])
 
     def update(self):

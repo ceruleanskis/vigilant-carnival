@@ -41,6 +41,16 @@ class Creature(entities.entity.Entity):
             'speed': self.speed
         }
 
+    @staticmethod
+    def from_json(json_obj: typing.Dict) -> 'Creature':
+        creature_name = json_obj['name']
+        creature = Creature(creature_name)
+        creature.x_pos = json_obj['x_pos']
+        creature.y_pos = json_obj['y_pos']
+        creature.action_points = json_obj['action_points']
+        creature.speed = json_obj['speed']
+        return creature
+
     def move(self, direction: Tuple[int, int]):
         self.previous_x_pos = self.x_pos
         self.previous_y_pos = self.y_pos
