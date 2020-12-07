@@ -19,7 +19,7 @@ else:
 SAVE_GAME_PREFIX = 'data'
 SAVE_GAME_EXT = '.save.json'
 
-TILE_SIZE = 40
+TILE_SIZE = 64
 
 FONT_SIZE = 48
 DISPLAY_WIDTH = 1920

@@ -3,12 +3,18 @@
     "id": 0,
     "name": "player",
     "ascii": "@",
-    "image": "assets/tilesets/kenney_microroguelike_1.2/Tiles/Colored/tile_0004.png"
+    "images": [
+      "assets/tilesets/main/entities/player/astronaut_0.png",
+      "assets/tilesets/main/entities/player/astronaut_1.png"
+    ]
   },
   "floating_eye": {
     "id": 1,
     "name": "floating_eye",
     "ascii": "e",
-    "image": "assets/tilesets/kenney_microroguelike_1.2/Tiles/Colored/tile_0013.png"
+    "images": [
+      "assets/tilesets/main/entities/floating_eye/eye_0.png",
+      "assets/tilesets/main/entities/floating_eye/eye_1.png"
+    ]
   }
 }

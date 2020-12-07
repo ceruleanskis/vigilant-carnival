@@ -24,9 +24,13 @@ class Player(entities.creature.Creature):
                 self.current_action = entities.actions.actions.MoveAction(self, (0, 1))
                 return self.current_action
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                self.facing = entities.creature.Facing.left
+                self.facing_changed = True
                 self.current_action = entities.actions.actions.MoveAction(self, (-1, 0))
                 return self.current_action
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                self.facing = entities.creature.Facing.right
+                self.facing_changed = True
                 self.current_action = entities.actions.actions.MoveAction(self, (1, 0))
                 return self.current_action
             elif event.type == pygame.JOYHATMOTION:

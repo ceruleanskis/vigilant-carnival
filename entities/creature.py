@@ -10,6 +10,9 @@ import utilities.constants
 import utilities.game_utils
 import utilities.load_data
 
+class Facing:
+    left = 'left'
+    right = 'right'
 
 class Creature(entities.entity.Entity):
     def __init__(self, name: str):
@@ -18,9 +21,13 @@ class Creature(entities.entity.Entity):
         self.y_pos = 1
 
         self.name = name
-        image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['image'],
-                                                           (0, 0, 0))
-        self.image = image
+        self.images = [
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][0],
+                                                       (255, 255, 255)),
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][1],
+                                                       (255, 255, 255))
+        ]
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
@@ -28,9 +35,13 @@ class Creature(entities.entity.Entity):
         self.previous_y_pos = self.y_pos
         self.action_points = 0
         self.speed = 100
-        import entities.actions.actions
         self.current_action = entities.actions.actions.RandomMoveAction(self)
         self.parent_scene: scenes.game_scene.GameScene = None
+        self.image_num = 0
+        self.image = self.images[0]
+        self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
+        self.facing = Facing.left
+        self.facing_changed = False
 
     def to_json(self):
         return {
@@ -58,6 +69,14 @@ class Creature(entities.entity.Entity):
         self.x_pos += direction[0]
         self.y_pos += direction[1]
 
+        if direction == (-1, 0):
+            self.facing = Facing.left
+            self.facing_changed = True
+
+        if direction == (1, 0):
+            self.facing = Facing.right
+            self.facing_changed = True
+
     def moved_to_blocked(self) -> typing.Union[None, 'Creature', components.map.Tile]:
         for other_creature in self.parent_scene.creatures:
             if other_creature is not self and self.x_pos == other_creature.x_pos and self.y_pos == other_creature.y_pos:
@@ -82,6 +101,21 @@ class Creature(entities.entity.Entity):
         self.y_pos = y_pos
         self.previous_x_pos = x_pos
         self.previous_y_pos = y_pos
+
+    def update(self):
+        if pygame.time.get_ticks() >= self.next_move or self.facing_changed:
+            self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
+            if self.image_num == 0:
+                self.image_num = 1
+                self.image = self.images[1]
+            else:
+                self.image_num = 0
+                self.image = self.images[0]
+
+            if self.facing == Facing.right:
+                self.image = pygame.transform.flip(self.image, True, False)
+
+            self.facing_changed = False
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.teleport(self.x_pos, self.y_pos)
