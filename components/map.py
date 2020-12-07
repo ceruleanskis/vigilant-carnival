@@ -27,9 +27,9 @@ class Tile(entities.entity.Entity):
         super(Tile, self).__init__()
         self.x: int = x
         self.y: int = y
-        self.surface = pygame.Surface((utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
+        self.image = pygame.Surface((utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
         self.image_str: str = ""
-        self.rect = self.surface.get_rect()
+        self.rect = self.image.get_rect()
         self.type = utilities.constants.TILE_FLOOR
         self.visible = False
         self.text = font.render(f'{self.x},{self.y}', True, pygame.Color("yellow"))
@@ -243,14 +243,13 @@ class TileMap:
     @staticmethod
     def draw_tile(current_tile: Tile):
         if current_tile.visible:
-            current_tile.surface = utilities.game_utils.GameUtils.load_sprite(
+            current_tile.image = utilities.game_utils.GameUtils.load_sprite(
                 current_tile.image_str)
-        else:
-            current_tile.surface.fill((0, 0, 0))
 
-        current_tile.rect = current_tile.surface.get_rect()
+        current_tile.image.set_colorkey((0, 0, 0))
+        current_tile.rect = current_tile.image.get_rect()
         current_tile.rect.x = current_tile.x * utilities.constants.TILE_SIZE
         current_tile.rect.y = current_tile.y * utilities.constants.TILE_SIZE
         if utilities.constants.GRID_DISPLAY:
             pygame.draw.rect(
-                current_tile.surface, utilities.constants.BLACK, current_tile.surface.get_rect(), 1)
+                current_tile.image, utilities.constants.BLACK, current_tile.image.get_rect(), 1)

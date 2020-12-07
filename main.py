@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 
 import scenes.director
 import utilities.constants
@@ -7,6 +8,8 @@ import utilities.logsetup
 import utilities.seed
 from components.scene import Scene
 from scenes.menu_scene import MenuScene
+
+flags = DOUBLEBUF
 
 log = utilities.logsetup.log()
 
@@ -22,7 +25,7 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
     """
     pygame.init()
 
-    screen = pygame.display.set_mode((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
+    screen = pygame.display.set_mode((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT), flags)
     clock = pygame.time.Clock()
     pygame.font.init()
     font = pygame.font.SysFont(None, 48)

@@ -2,10 +2,11 @@ import itertools
 import random
 import timeit
 import typing
-import utilities.logsetup
 from typing import List
 
 import utilities.load_data
+import utilities.logsetup
+
 logger = utilities.logsetup.log()
 
 
@@ -218,7 +219,6 @@ class Rectangle:
         for x in range(self.x, self.x + self.width):
             wall.append(Coordinate(x, self.y + self.height - 1))
         return wall
-
 
 
 class ShipGenerator:

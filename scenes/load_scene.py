@@ -7,11 +7,12 @@ import scenes.director
 import scenes.game_scene
 import utilities.constants
 import utilities.game_utils as game_utils
-import utilities.save_manager
 import utilities.logsetup
+import utilities.save_manager
 from components.scene import Scene
 
 log = utilities.logsetup.log()
+
 
 class LoadScene(Scene):
     """
@@ -70,7 +71,7 @@ class LoadScene(Scene):
             file_name = self.menu_items[index]['path']
             screenshot = f'{utilities.constants.SAVE_GAME_DIR}/{file_name.removesuffix(".json")}.png' \
                 .removeprefix(f'{utilities.constants.SAVE_GAME_DIR}/')
-            self.displayed_screenshot = pygame.image.load(screenshot)
+            self.displayed_screenshot = pygame.image.load(screenshot).convert()
             self.displayed_screenshot = pygame.transform.scale(self.displayed_screenshot, (
                 self.screenshot_width, self.screenshot_height))
         except Exception as err:

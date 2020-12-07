@@ -3,11 +3,13 @@ import typing
 
 import pygame
 
+import components.camera
 import components.map
 import scenes.menu_scene
 import systems.time_manager
 import utilities.constants
 import utilities.fov
+import utilities.game_utils
 import utilities.load_data
 import utilities.logsetup
 import utilities.messages
@@ -30,28 +32,34 @@ class GameScene(Scene):
         self.font = pygame.font.SysFont(None, 48)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
+        self.enemy_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.creatures: typing.List[Creature] = []
         self.time_manager = systems.time_manager.TimeManager()
+        background_image = pygame.image.load(utilities.load_data.BACKGROUND_IMAGE_DATA['space']['image']).convert()
+        self.background_image = pygame.transform.scale(background_image, (
+            utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
+        self.background_surface = self.surface.copy()
+
+        self.background_rendered = False
 
         if not loaded_json:
-            width = ((utilities.constants.DISPLAY_WIDTH - utilities.constants.TILE_SIZE)
-                     // utilities.constants.TILE_SIZE) + 1
-            height = (utilities.constants.DISPLAY_HEIGHT - utilities.constants.TILE_SIZE) \
-                     // utilities.constants.TILE_SIZE
+            width = 50
+            height = 50
             self.tile_map = components.map.TileMap(width, height)
 
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
-            # creature = Creature('floating_eye')
-            # self.all_sprites.add(creature)
-            # random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            # creature.x_pos = random_pos.x
-            # creature.y_pos = random_pos.y
-            # self.creatures.extend([creature])
+            creature = Creature('floating_eye')
+            self.all_sprites.add(creature)
+            self.enemy_sprites.add(creature)
+            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+            creature.x_pos = random_pos.x
+            creature.y_pos = random_pos.y
+            self.creatures.extend([creature])
         else:
             self.load(loaded_json)
 
@@ -155,13 +163,46 @@ class GameScene(Scene):
         return message_log_surface
 
     def render(self, screen):
-        self.surface.fill((0, 0, 0))
-        self.tile_map.render(screen)
-        for entity in self.all_sprites:
-            entity.render(screen)
-            self.surface.blit(entity.surface, entity.rect)
-            if utilities.constants.COORDINATE_DISPLAY and isinstance(entity, components.map.Tile):
-                self.surface.blit(entity.text, entity.rect)
+
+        if not self.background_rendered:
+            self.background_surface.blit(self.background_image, self.background_image.get_rect())
+            self.background_rendered = True
+
+        screen.blit(self.background_surface, (0, 0))
+
+        self.surface.blit(self.background_image, self.background_image.get_rect())
+
+        # self.all_sprites.clear(screen, self.surface)
+        coord = components.camera.track_camera(self.player.x_pos, self.player.y_pos, self.tile_map.width,
+                                               self.tile_map.height)
+
+        for y in range(utilities.constants.MAP_DISPLAY_HEIGHT):
+            for x in range(utilities.constants.MAP_DISPLAY_WIDTH):
+                start_x = x + coord.x
+                start_y = y + coord.y
+
+                if start_x < 0:
+                    start_x = 0
+
+                if start_y < 0:
+                    start_y = 0
+
+                tile: components.map.Tile = self.tile_map.tile_map[start_x][start_y]
+                tile_rect = ((x * utilities.constants.TILE_SIZE),
+                             (y * utilities.constants.TILE_SIZE),
+                             utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE)
+                if tile.type != 'stone':
+                    tile.render(screen)
+                    self.surface.blit(tile.image, tile_rect)
+
+                for enemy in self.enemy_sprites:
+                    if enemy.x_pos == start_x and enemy.y_pos == start_y:
+                        enemy.render(screen)
+                        self.surface.blit(enemy.image, tile_rect)
+
+                if self.player.x_pos == start_x and self.player.y_pos == start_y:
+                    self.player.render(screen)
+                    self.surface.blit(self.player.image, tile_rect)
 
         self.surface.blit(self.render_message_log(),
                           [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,

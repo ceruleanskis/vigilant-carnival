@@ -75,3 +75,4 @@ pythonenv*
 # End of https://www.toptal.com/developers/gitignore/api/python
 /saves/
 logs/*
+/assets/tilesets/main/
