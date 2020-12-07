@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+
 import scenes.director
 import utilities.constants
 import utilities.game_utils

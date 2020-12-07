@@ -32,7 +32,8 @@ class MessageLog:
             # Add the new line as a Message object, with the text and the color
             self.messages.append(Message(line, message.color))
 
+
 global message_log
 
 message_log = MessageLog(utilities.constants.MESSAGE_LOG_WIDTH // utilities.constants.FONT_SIZE,
-                                                         utilities.constants.MAX_MESSAGES)
+                         utilities.constants.MAX_MESSAGES)

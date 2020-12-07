@@ -7,11 +7,12 @@ import scenes.director
 import scenes.game_scene
 import utilities.constants
 import utilities.game_utils as game_utils
-import utilities.save_manager
 import utilities.logsetup
+import utilities.save_manager
 from components.scene import Scene
 
 log = utilities.logsetup.log()
+
 
 class LoadScene(Scene):
     """

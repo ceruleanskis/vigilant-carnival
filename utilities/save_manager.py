@@ -7,8 +7,8 @@ import typing
 import pygame
 
 import utilities.constants
-import utilities.seed
 import utilities.logsetup
+import utilities.seed
 
 log = utilities.logsetup.log()
 
@@ -133,7 +133,7 @@ class SaveManager:
         :type surface: pygame.Surface
         """
         save_as_screenshot_name = SaveManager.get_screenshot_file_path(save_as_name)
-        pygame.image.save(surface, save_as_screenshot_name) # pragma: no cover
+        pygame.image.save(surface, save_as_screenshot_name)  # pragma: no cover
         log.info(f'Saved screenshot to {save_as_screenshot_name}')
 
     @staticmethod
