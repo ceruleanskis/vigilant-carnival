@@ -20,8 +20,8 @@ class Creature(entities.entity.Entity):
         self.name = name
         image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['image'],
                                                            (0, 0, 0))
-        self.surface = image
-        self.rect = self.surface.get_rect()
+        self.image = image
+        self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
         self.previous_x_pos = self.x_pos

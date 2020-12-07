@@ -70,7 +70,7 @@ class LoadScene(Scene):
             file_name = self.menu_items[index]['path']
             screenshot = f'{utilities.constants.SAVE_GAME_DIR}/{file_name.removesuffix(".json")}.png' \
                 .removeprefix(f'{utilities.constants.SAVE_GAME_DIR}/')
-            self.displayed_screenshot = pygame.image.load(screenshot)
+            self.displayed_screenshot = pygame.image.load(screenshot).convert()
             self.displayed_screenshot = pygame.transform.scale(self.displayed_screenshot, (
                 self.screenshot_width, self.screenshot_height))
         except Exception as err:
