@@ -5,6 +5,8 @@ import pygame
 
 import components.camera
 import components.map
+import entities.creature
+import entities.player
 import scenes.menu_scene
 import systems.time_manager
 import utilities.constants
@@ -17,8 +19,6 @@ import utilities.save_manager
 import utilities.seed
 import utilities.ship_generator
 from components.scene import Scene
-from entities.creature import Creature
-from entities.player import Player
 
 log = utilities.logsetup.log()
 random.seed(utilities.seed.seed_int)
@@ -36,7 +36,7 @@ class GameScene(Scene):
         self.loaded_player_pos = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
-        self.creatures: typing.List[Creature] = []
+        self.creatures: typing.List[entities.creature.Creature] = []
         self.time_manager = systems.time_manager.TimeManager()
         background_image = pygame.image.load(utilities.load_data.BACKGROUND_IMAGE_DATA['space']['image']).convert()
         self.background_image = pygame.transform.scale(background_image, (
@@ -63,13 +63,15 @@ class GameScene(Scene):
         else:
             self.load(loaded_json)
 
-        self.player = Player()
+        self.player = entities.player.Player()
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
         self.creatures.append(self.player)
+        self.time_manager.register(self.player)
 
         for critter in self.creatures:
-            self.time_manager.register(critter)
+            if creature is not self.player:
+                self.time_manager.register(critter)
 
         self.block_input = False
 
@@ -89,7 +91,7 @@ class GameScene(Scene):
 
         if 'creatures' in json_data:
             for creature_data in json_data['creatures']:
-                creature = Creature.from_json(creature_data)
+                creature = entities.creature.Creature.from_json(creature_data)
                 self.all_sprites.add(creature)
                 self.creatures.append(creature)
 
@@ -144,7 +146,10 @@ class GameScene(Scene):
                                   self.tile_map.is_blocked_at_location)
 
     def update(self):
-        pass
+        for creature in self.creatures:
+            if not creature.fighter_component or not creature.fighter_component.alive:
+                self.time_manager.release(creature)
+                self.creatures.remove(creature)
 
     def render_message_log(self) -> pygame.surface.Surface:
         message_log_surface = pygame.surface.Surface((utilities.constants.MESSAGE_LOG_WIDTH,

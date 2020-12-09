@@ -12,8 +12,10 @@ class Player(entities.creature.Creature):
     def __init__(self):
         super().__init__('player')
         self.action_points = 0
-        self.speed = 100
+        self.speed = 101
         self.current_action = None
+        self.fighter_component.hp = 100
+        self.fighter_component.max_hp = 100
 
     def handle_input(self, events, pressed_keys) -> typing.Union[entities.actions.actions.BaseAction, None]:
         for event in events:

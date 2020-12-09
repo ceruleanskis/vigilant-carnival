@@ -5,22 +5,29 @@ import pygame
 
 import components.map
 import entities.entity
-import scenes.game_scene
 import utilities.constants
 import utilities.game_utils
 import utilities.load_data
+import utilities.logsetup
+
+log = utilities.logsetup.log()
+
 
 class Facing:
     left = 'left'
     right = 'right'
 
+
 class Creature(entities.entity.Entity):
     def __init__(self, name: str):
+        import scenes.game_scene
+        import components.component
 
         super().__init__(name)
         self.x_pos = 1
         self.y_pos = 1
 
+        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
 
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
             utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']
@@ -49,6 +56,8 @@ class Creature(entities.entity.Entity):
         self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
         self.facing = Facing.left
         self.facing_changed = False
+        self.damaged = False
+        self.damage_taken = 0
 
     def to_json(self):
         return {
@@ -137,3 +146,8 @@ class Creature(entities.entity.Entity):
     def take_turn(self) -> int:
         self.current_action = entities.actions.actions.RandomMoveAction(self)
         return self.current_action.perform()
+
+    def die(self):
+        self.fighter_component = None
+        self.blocks = False
+        self.current_action = None

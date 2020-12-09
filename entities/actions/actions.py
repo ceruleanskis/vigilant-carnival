@@ -53,5 +53,10 @@ class MeleeAction(BaseAction):
         self.action_cost = 100
 
     def perform(self) -> int:
-        log.debug(f'The {self.creature.name} kicks the {self.melee_target.name}.')
+        damage = self.creature.fighter_component.strength
+        self.melee_target.fighter_component.hp -= damage
+        self.melee_target.damaged = True
+        self.melee_target.damage_taken = damage
+        log.debug(
+            f'The {self.creature.name} kicks the {self.melee_target.name} for {damage}.')
         return self.action_cost
