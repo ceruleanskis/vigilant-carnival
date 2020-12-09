@@ -10,6 +10,7 @@ class Entity(pygame.sprite.Sprite):
         super().__init__()
         self.name = name
         self.blocks = True
+        self.visible = False
 
     def update(self):
         super().update()

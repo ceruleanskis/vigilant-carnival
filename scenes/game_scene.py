@@ -202,7 +202,8 @@ class GameScene(Scene):
                     self.surface.blit(tile.image, tile_rect)
 
                 for enemy in self.enemy_sprites:
-                    if enemy.x_pos == start_x and enemy.y_pos == start_y:
+                    enemy.visible = self.tile_map.tile_map[start_x][start_y].visible
+                    if enemy.visible and enemy.x_pos == start_x and enemy.y_pos == start_y:
                         enemy.render(screen)
                         self.surface.blit(enemy.image, tile_rect)
 
