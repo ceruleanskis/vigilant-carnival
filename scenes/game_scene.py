@@ -53,13 +53,14 @@ class GameScene(Scene):
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
-            creature = Creature('floating_eye')
-            self.all_sprites.add(creature)
-            self.enemy_sprites.add(creature)
-            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            creature.x_pos = random_pos.x
-            creature.y_pos = random_pos.y
-            self.creatures.extend([creature])
+            for i in range(20):
+                creature = entities.creature.Creature('floating_eye')
+                self.all_sprites.add(creature)
+                self.enemy_sprites.add(creature)
+                random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+                creature.x_pos = random_pos.x
+                creature.y_pos = random_pos.y
+                self.creatures.append(creature)
         else:
             self.load(loaded_json)
 
