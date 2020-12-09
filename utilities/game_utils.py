@@ -6,7 +6,7 @@ import utilities
 import utilities.constants
 import utilities.logsetup
 
-logger = utilities.logsetup.log()
+log = utilities.logsetup.log()
 
 
 class GameUtils:
@@ -55,7 +55,7 @@ class GameUtils:
             image = pygame.transform.scale(image, (utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
             return image
         except FileNotFoundError as err:
-            logger.error(f'ERROR: {full_path} does not exist.')
+            log.error(f'ERROR: {full_path} does not exist.')
             raise err
         except Exception as err:
             raise err
