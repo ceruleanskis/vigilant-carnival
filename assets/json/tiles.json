@@ -5,9 +5,9 @@
     "ascii": "X",
     "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_151.png",
     "tileset_alpha": [
-      0,
-      0,
-      0
+      255,
+      255,
+      255
     ],
     "blocks": false
   },
@@ -16,11 +16,6 @@
     "name": "floor",
     "ascii": ".",
     "image": "assets/tilesets/main/floors/floor.png",
-    "tileset_alpha": [
-      0,
-      0,
-      0
-    ],
     "blocks": false
   },
   "wall": {
@@ -28,12 +23,7 @@
     "name": "wall",
     "ascii": "#",
     "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_692.png",
-    "blocks": false,
-    "tileset_alpha": [
-      0,
-      0,
-      0
-    ],
+    "blocks": true,
     "bitmask_values": {
       "0": {
         "image": "assets/tilesets/main/walls/wall_0.png"
@@ -90,23 +80,13 @@
     "name": "stone",
     "ascii": " ",
     "image": "assets/tilesets/roguelike-pack/Spritesheet/tile_920.png",
-    "tileset_alpha": [
-      0,
-      0,
-      0
-    ],
-    "blocks": false
+    "blocks": true
   },
   "door": {
     "id": 0,
     "name": "door",
     "ascii": "+",
     "image": "assets/tilesets/main/doors/door.png",
-    "tileset_alpha": [
-      0,
-      0,
-      0
-    ],
     "blocks": true
   },
   "open_door": {
@@ -114,11 +94,6 @@
     "name": "open_door",
     "ascii": "'",
     "image": "assets/tilesets/main/doors/open_door.png",
-    "tileset_alpha": [
-      0,
-      0,
-      0
-    ],
     "blocks": false
   }
 }

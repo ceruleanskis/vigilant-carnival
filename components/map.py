@@ -28,6 +28,9 @@ class Tile(entities.entity.Entity):
         self.x: int = x
         self.y: int = y
         self.image = pygame.Surface((utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
+        self.image.fill((0, 0, 0))
+        self.image.convert_alpha()
+        self.image.set_colorkey((0,0,0))
         self.image_str: str = ""
         self.rect = self.image.get_rect()
         self.type = utilities.constants.TILE_FLOOR
@@ -35,16 +38,21 @@ class Tile(entities.entity.Entity):
         self.text = font.render(f'{self.x},{self.y}', True, pygame.Color("yellow"))
         self.bitmask_value = 0
         self.blocks = False
+        self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = None
 
     @staticmethod
     def from_json(json_obj: Dict, x=None, y=None) -> 'Tile':
         if x is None and y is None:
             x = json_obj['x']
             y = json_obj['y']
-        tile = Tile(x, y)
-        tile.type = json_obj['name']
+        name = json_obj['name']
+        tile = Tile(x, y, name)
+        tile.type = name
         tile.blocks = json_obj['blocks']
-
+        try:
+            tile.tileset_alpha = json_obj['tileset_alpha']
+        except KeyError:
+            pass
         return tile
 
     def to_json(self):
@@ -243,10 +251,12 @@ class TileMap:
     @staticmethod
     def draw_tile(current_tile: Tile):
         if current_tile.visible:
+            convert_alpha = True
+            if current_tile.tileset_alpha is None:
+                convert_alpha = False
             current_tile.image = utilities.game_utils.GameUtils.load_sprite(
-                current_tile.image_str)
+                current_tile.image_str, colorkey=current_tile.tileset_alpha, convert_alpha=convert_alpha)
 
-        current_tile.image.set_colorkey((0, 0, 0))
         current_tile.rect = current_tile.image.get_rect()
         current_tile.rect.x = current_tile.x * utilities.constants.TILE_SIZE
         current_tile.rect.y = current_tile.y * utilities.constants.TILE_SIZE

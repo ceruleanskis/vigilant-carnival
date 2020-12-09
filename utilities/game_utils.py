@@ -44,14 +44,15 @@ class GameUtils:
         return fps_text
 
     @staticmethod
-    def load_sprite(path_from_root: Union[str, IO], colorkey: Tuple = None) -> pygame.Surface:
+    def load_sprite(path_from_root: Union[str, IO], colorkey: Tuple = None,
+                    convert_alpha: bool = None) -> pygame.Surface:
         full_path = f'{utilities.constants.ROOT_DIR}/{path_from_root}'
         try:
             image: pygame.Surface = pygame.image.load(full_path)
+            if convert_alpha:
+                image = image.convert_alpha()
             if colorkey:
                 image.set_colorkey(colorkey)
-            else:
-                image.convert_alpha()
             image = pygame.transform.scale(image, (utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
             return image
         except FileNotFoundError as err:

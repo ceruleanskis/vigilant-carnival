@@ -21,11 +21,18 @@ class Creature(entities.entity.Entity):
         self.y_pos = 1
 
         self.name = name
+
+        self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
+            utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']
+        convert_alpha = True
+        if self.tileset_alpha is None:
+            convert_alpha = False
+
         self.images = [
             utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][0],
-                                                       (255, 255, 255)),
+                                                       self.tileset_alpha, convert_alpha),
             utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][1],
-                                                       (255, 255, 255))
+                                                       self.tileset_alpha, convert_alpha)
         ]
         self.image = self.images[0]
         self.rect = self.image.get_rect()
@@ -60,6 +67,12 @@ class Creature(entities.entity.Entity):
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
+
+        try:
+            creature.tileset_alpha = json_obj['tileset_alpha']
+        except KeyError as err:
+            log.warning(f"Entity {creature.name} has no tileset alpha in JSON file.")
+
         return creature
 
     def move(self, direction: Tuple[int, int]):

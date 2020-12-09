@@ -6,6 +6,11 @@
     "images": [
       "assets/tilesets/main/entities/player/astronaut_0.png",
       "assets/tilesets/main/entities/player/astronaut_1.png"
+    ],
+    "tileset_alpha": [
+      255,
+      255,
+      255
     ]
   },
   "floating_eye": {
@@ -15,6 +20,11 @@
     "images": [
       "assets/tilesets/main/entities/floating_eye/eye_0.png",
       "assets/tilesets/main/entities/floating_eye/eye_1.png"
+    ],
+    "tileset_alpha": [
+      255,
+      255,
+      255
     ]
   }
 }
