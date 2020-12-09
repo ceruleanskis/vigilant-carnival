@@ -16,11 +16,11 @@ class Facing:
 
 class Creature(entities.entity.Entity):
     def __init__(self, name: str):
-        super().__init__()
+
+        super().__init__(name)
         self.x_pos = 1
         self.y_pos = 1
 
-        self.name = name
 
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
             utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']

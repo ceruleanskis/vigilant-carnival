@@ -6,8 +6,9 @@ import pygame
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name: str):
         super().__init__()
+        self.name = name
         self.blocks = True
 
     def update(self):
