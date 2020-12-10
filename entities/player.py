@@ -3,6 +3,7 @@ from typing import Tuple
 
 import pygame
 
+import components.component
 import entities.actions.actions
 import entities.creature
 
@@ -15,8 +16,7 @@ class Player(entities.creature.Creature):
         self.action_points = 0
         self.speed = 101
         self.current_action = None
-        self.fighter_component.hp = 100
-        self.fighter_component.max_hp = 100
+        self.fighter_component = components.component.FighterComponent(self, 10, 3)
         self.alive = True
 
     def handle_input(self, events, pressed_keys) -> typing.Union[entities.actions.actions.BaseAction, None]:

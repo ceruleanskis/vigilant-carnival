@@ -10,7 +10,7 @@ class BaseComponent:
         self.entity = entity
 
 
-class FighterComponent(BaseComponent):
+class FighterComponent(BaseComponent, object):
     def __init__(self, entity: entities.creature.Creature, hp: int, strength: int):
         super().__init__(entity)
         self.entity = entity
@@ -26,9 +26,6 @@ class FighterComponent(BaseComponent):
     @hp.setter
     def hp(self, value: int) -> None:
         self._hp = max(0, min(value, self.max_hp))
-
-        if self._hp > self.max_hp:
-            self._hp = self.max_hp
 
         if self._hp <= 0:
             self.die()

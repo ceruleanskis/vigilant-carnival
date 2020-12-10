@@ -31,7 +31,8 @@ class GameScene(Scene):
     def __init__(self, loaded_json=None):
         Scene.__init__(self)
         self.block_input = True
-        self.font = utilities.fonts.default(utilities.constants.MESSAGE_FONT_SIZE)
+        self.message_font = utilities.fonts.default(utilities.constants.MESSAGE_FONT_SIZE)
+        self.stats_display_font = utilities.fonts.default(32)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -46,7 +47,7 @@ class GameScene(Scene):
         self.background_surface = self.surface.copy()
 
         self.background_rendered = False
-        font_pixel_width = self.font.render("m", True, utilities.constants.BLACK).get_width()
+        font_pixel_width = self.message_font.render("m", True, utilities.constants.BLACK).get_width()
         utilities.messages.message_log = utilities.messages.MessageLog(
             (utilities.constants.MESSAGE_LOG_WIDTH // font_pixel_width) - font_pixel_width,
             utilities.constants.MAX_MESSAGES)
@@ -164,18 +165,49 @@ class GameScene(Scene):
     def render_message_log(self) -> pygame.surface.Surface:
         message_log_surface = pygame.surface.Surface((utilities.constants.MESSAGE_LOG_WIDTH,
                                                       utilities.constants.MESSAGE_LOG_HEIGHT))
-        message_log_surface.fill((60, 51, 154))
+        message_log_surface.fill(utilities.constants.DARK_BLUE)
         pygame.draw.rect(message_log_surface, (174, 228, 237), message_log_surface.get_rect().inflate(-10, -10), 3)
 
         for i in range(len(utilities.messages.message_log.messages)):
             message = utilities.messages.message_log.messages[i]
-            message_display = self.font.render(message.text, True, message.color)
+            message_display = self.message_font.render(message.text, True, message.color)
             message_display_rect = message_display.get_rect()
             message_log_surface.blit(message_display, (10, utilities.constants.FONT_SIZE * i + 10,
                                                        message_display_rect.width, message_display_rect.height
                                                        ))
 
         return message_log_surface
+
+    def render_stats_display(self) -> pygame.surface.Surface:
+        stats_display_surface = pygame.surface.Surface((utilities.constants.STATS_DISPLAY_WIDTH,
+                                                        utilities.constants.MESSAGE_LOG_HEIGHT))
+        stats_display_surface.fill(utilities.constants.DARK_BLUE)
+
+        health_icon_path = utilities.load_data.INTERFACE_DATA["health"]
+        health_icon = utilities.game_utils.GameUtils.load_sprite(health_icon_path)
+
+        stats_display_surface.blit(health_icon, [10, 10, health_icon.get_width(), health_icon.get_height()])
+
+        health_text = 'DEAD'
+        health_text_color = utilities.constants.GREEN
+        if self.player.fighter_component:
+            health_text = f'{self.player.fighter_component.hp}/{self.player.fighter_component.max_hp}'
+            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.6:
+                health_text_color = utilities.constants.YELLOW
+            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp  * 0.4:
+                health_text_color = utilities.constants.ORANGE
+            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp  * 0.2:
+                health_text_color = utilities.constants.LIGHT_RED
+
+        health_display = self.stats_display_font.render(health_text, True, health_text_color)
+
+        stats_display_surface.blit(health_display, [health_icon.get_width() + 20, (health_icon.get_height() // 2) - 15,
+                                                    health_display.get_width(),
+                                                    health_display.get_height()])
+
+        pygame.draw.rect(stats_display_surface, (174, 228, 237), stats_display_surface.get_rect().inflate(-10, -10), 3)
+
+        return stats_display_surface
 
     def render(self, screen):
 
@@ -223,6 +255,13 @@ class GameScene(Scene):
         self.surface.blit(self.render_message_log(),
                           [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
                            utilities.constants.MESSAGE_LOG_WIDTH,
+                           utilities.constants.MESSAGE_LOG_HEIGHT
+                           ])
+
+        self.surface.blit(self.render_stats_display(),
+                          [utilities.constants.DISPLAY_WIDTH - utilities.constants.STATS_DISPLAY_WIDTH,
+                           utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                           utilities.constants.STATS_DISPLAY_WIDTH,
                            utilities.constants.MESSAGE_LOG_HEIGHT
                            ])
 
