@@ -3,6 +3,7 @@ import scenes.game_scene as game_scene
 import scenes.load_scene as load_scene
 import scenes.save_scene as save_scene
 import utilities.constants
+import utilities.fonts
 import utilities.logsetup
 import utilities.save_manager
 from components.scene import Scene
@@ -31,8 +32,7 @@ class MenuScene(Scene):
 
     def __init__(self, title: bool = True):
         Scene.__init__(self)
-        pygame.font.init()
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = utilities.fonts.default(48)
         self.title = title
         if self.title:
             self.menu_items = [0, 1, 2]

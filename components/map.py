@@ -7,6 +7,7 @@ import pygame
 import entities.entity
 import utilities.constants
 import utilities.dungeon_generator
+import utilities.fonts
 import utilities.game_utils
 import utilities.load_data
 import utilities.logsetup
@@ -18,8 +19,7 @@ log = utilities.logsetup.log()
 
 random.seed(utilities.seed.seed_int)
 
-pygame.font.init()
-font = pygame.font.SysFont(None, 12)
+font = utilities.fonts.default(12)
 
 
 class Tile(entities.entity.Entity):
@@ -30,7 +30,7 @@ class Tile(entities.entity.Entity):
         self.image = pygame.Surface((utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
         self.image.fill((0, 0, 0))
         self.image.convert_alpha()
-        self.image.set_colorkey((0,0,0))
+        self.image.set_colorkey((0, 0, 0))
         self.image_str: str = ""
         self.rect = self.image.get_rect()
         self.type = utilities.constants.TILE_FLOOR

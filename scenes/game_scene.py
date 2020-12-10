@@ -7,9 +7,12 @@ import components.camera
 import components.map
 import entities.creature
 import entities.player
+import scenes.death_scene
+import scenes.director
 import scenes.menu_scene
 import systems.time_manager
 import utilities.constants
+import utilities.fonts
 import utilities.fov
 import utilities.game_utils
 import utilities.load_data
@@ -22,14 +25,13 @@ from components.scene import Scene
 
 log = utilities.logsetup.log()
 random.seed(utilities.seed.seed_int)
-pygame.font.init()
 
 
 class GameScene(Scene):
     def __init__(self, loaded_json=None):
         Scene.__init__(self)
         self.block_input = True
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = utilities.fonts.default(utilities.constants.MESSAGE_FONT_SIZE)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
@@ -44,6 +46,10 @@ class GameScene(Scene):
         self.background_surface = self.surface.copy()
 
         self.background_rendered = False
+        font_pixel_width = self.font.render("m", True, utilities.constants.BLACK).get_width()
+        utilities.messages.message_log = utilities.messages.MessageLog(
+            (utilities.constants.MESSAGE_LOG_WIDTH // font_pixel_width) - font_pixel_width,
+            utilities.constants.MAX_MESSAGES)
 
         if not loaded_json:
             width = 50
@@ -136,6 +142,9 @@ class GameScene(Scene):
                 self.update_fov()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
+
+        if not self.player.alive:
+            scenes.director.replace_with(scenes.death_scene.DeathScene())
 
     def update_fov(self):
         utilities.fov.fieldOfView(self.player.x_pos,

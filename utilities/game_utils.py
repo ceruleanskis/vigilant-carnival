@@ -1,3 +1,4 @@
+import typing
 from typing import Union, IO, Tuple
 
 import pygame
@@ -21,8 +22,13 @@ class GameUtils:
 
     @staticmethod
     def get_text_center_width(screen: Union[pygame.Surface, pygame.SurfaceType],
-                              text: Union[pygame.Surface, pygame.SurfaceType]):
+                              text: Union[pygame.Surface, pygame.SurfaceType]) -> int:
         return screen.get_width() // 2 - text.get_width() // 2
+
+    @staticmethod
+    def get_text_center(screen: Union[pygame.Surface, pygame.SurfaceType],
+                        text: Union[pygame.Surface, pygame.SurfaceType]) -> typing.Tuple[int, int]:
+        return GameUtils.get_text_center_width(screen, text), GameUtils.get_text_center_height(screen, text)
 
     @staticmethod
     def round_to_multiple(x: int, base: int) -> int:

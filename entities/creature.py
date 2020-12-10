@@ -6,12 +6,12 @@ import pygame
 import components.map
 import entities.entity
 import utilities.constants
+import utilities.fonts
 import utilities.game_utils
 import utilities.load_data
 import utilities.logsetup
 
-pygame.font.init()
-font = pygame.font.SysFont(None, 36)
+font = utilities.fonts.default(24)
 
 log = utilities.logsetup.log()
 

@@ -3,6 +3,7 @@ from pygame.locals import *
 
 import scenes.director
 import utilities.constants
+import utilities.fonts
 import utilities.game_utils
 import utilities.logsetup
 import utilities.seed
@@ -27,8 +28,7 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
 
     screen = pygame.display.set_mode((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT), flags)
     clock = pygame.time.Clock()
-    pygame.font.init()
-    font = pygame.font.SysFont(None, 48)
+    fps_font = utilities.fonts.default(28)
 
     active_scene: Scene = starting_scene
     scenes.director.push(active_scene)
@@ -59,7 +59,7 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
         active_scene.handle_input(filtered_events, pressed_keys)
         active_scene.update()
         active_scene.render(screen)
-        show_fps(screen, clock, font)
+        show_fps(screen, clock, fps_font)
         pygame.display.flip()
         clock.tick(utilities.constants.FPS)
 
