@@ -9,7 +9,7 @@ coverage==5.3
 docutils==0.16
 idna==2.10
 imagesize==1.2.0
-importlib-metadata==3.1.1
+importlib-metadata==3.3.0
 Jinja2==2.11.2
 jsonpickle==1.4.2
 MarkupSafe==1.1.1
