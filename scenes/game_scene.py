@@ -17,6 +17,7 @@ import utilities.fov
 import utilities.game_utils
 import utilities.load_data
 import utilities.logsetup
+import utilities.map_helpers
 import utilities.messages
 import utilities.save_manager
 import utilities.seed
@@ -32,6 +33,7 @@ class GameScene(Scene):
         Scene.__init__(self)
         self.block_input = True
         self.message_font = utilities.fonts.default(utilities.constants.MESSAGE_FONT_SIZE)
+        self.pathfind_font = utilities.fonts.default(12)
         self.stats_display_font = utilities.fonts.default(32)
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
@@ -53,15 +55,15 @@ class GameScene(Scene):
             utilities.constants.MAX_MESSAGES)
 
         if not loaded_json:
-            width = 50
-            height = 50
+            width = 20
+            height = 20
             self.tile_map = components.map.TileMap(width, height)
 
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
             for i in range(20):
-                creature = entities.creature.Creature('floating_eye')
+                creature = entities.creature.Creature('floating_eye', ID=i + 1)
                 self.all_sprites.add(creature)
                 self.enemy_sprites.add(creature)
                 random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
@@ -82,6 +84,10 @@ class GameScene(Scene):
                 self.time_manager.register(critter)
 
         self.block_input = False
+
+        self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
+            self.tile_map,
+            goal_pos=utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
 
     def add_map_tiles_to_sprite_list(self):
         for y in range(self.tile_map.height):
@@ -132,6 +138,7 @@ class GameScene(Scene):
     def update_creature_parent(self):
         for creature in self.creatures:
             creature.parent_scene = self
+            creature.distance_map = self.distance_map
 
     def handle_input(self, events, pressed_keys):
         if not self.block_input:
@@ -145,6 +152,7 @@ class GameScene(Scene):
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
 
         if not self.player.alive:
+            log.debug('DEAD')
             scenes.director.replace_with(scenes.death_scene.DeathScene())
 
     def update_fov(self):
@@ -155,6 +163,9 @@ class GameScene(Scene):
                                   10,
                                   self.tile_map.set_tile_visibility,
                                   self.tile_map.is_blocked_at_location)
+        self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
+            self.tile_map,
+            goal_pos=utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
 
     def update(self):
         for creature in self.creatures:
@@ -194,9 +205,9 @@ class GameScene(Scene):
             health_text = f'{self.player.fighter_component.hp}/{self.player.fighter_component.max_hp}'
             if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.6:
                 health_text_color = utilities.constants.YELLOW
-            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp  * 0.4:
+            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.4:
                 health_text_color = utilities.constants.ORANGE
-            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp  * 0.2:
+            if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.2:
                 health_text_color = utilities.constants.LIGHT_RED
 
         health_display = self.stats_display_font.render(health_text, True, health_text_color)
@@ -252,6 +263,9 @@ class GameScene(Scene):
                     self.player.render(screen)
                     self.surface.blit(self.player.image, tile_rect)
 
+                if utilities.constants.PATHFINDING_DISPLAY:
+                    self.display_pathfinding(tile, tile_rect)
+
         self.surface.blit(self.render_message_log(),
                           [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
                            utilities.constants.MESSAGE_LOG_WIDTH,
@@ -266,3 +280,14 @@ class GameScene(Scene):
                            ])
 
         screen.blit(self.surface, self.surface.get_rect())
+
+    def display_pathfinding(self, tile, tile_rect: pygame.Rect):
+        index_in_distance_map = utilities.map_helpers.MapHelpers.get_index(self.distance_map, tile)
+        distance_map_tile = self.distance_map[index_in_distance_map]
+        distance = str(distance_map_tile.pathfind_distance)
+        distance_text = self.pathfind_font.render(distance, True, utilities.constants.RED)
+        self.surface.blit(distance_text, [tile_rect[0] + utilities.constants.TILE_SIZE // 2,
+                                          tile_rect[1],
+                                          tile_rect[2],
+                                          tile_rect[3]
+                                          ])

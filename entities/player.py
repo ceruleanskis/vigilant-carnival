@@ -11,7 +11,7 @@ import entities.creature
 class Player(entities.creature.Creature):
 
     def __init__(self):
-        super().__init__('player')
+        super().__init__('player', ID=0)
         self.visible = True
         self.action_points = 0
         self.speed = 101

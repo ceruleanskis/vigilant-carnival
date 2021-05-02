@@ -22,11 +22,12 @@ class Facing:
 
 
 class Creature(entities.entity.Entity):
-    def __init__(self, name: str):
+    def __init__(self, name: str, ID: int):
         import scenes.game_scene
         import components.component
 
         super().__init__(name)
+        self.ID = ID
         self.x_pos = 1
         self.y_pos = 1
 

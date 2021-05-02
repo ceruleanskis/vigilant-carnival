@@ -39,6 +39,8 @@ class Tile(entities.entity.Entity):
         self.bitmask_value = 0
         self.blocks = False
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = None
+        self.pathfind_distance = 0
+        self.discovered = False
 
     @staticmethod
     def from_json(json_obj: Dict, x=None, y=None) -> 'Tile':
@@ -212,7 +214,6 @@ class TileMap:
         coord: utilities.ship_generator.Coordinate = random.choice(room.get_room_coords(without_corners=True))
         tile: Tile = self.tile_map[coord.x][coord.y]
         if room.includes_point(coord) and tile.type != 'wall':
-            log.info(f'{tile.type}, {coord}')
             return coord
         else:
             return self.random_coord_in_room(room)

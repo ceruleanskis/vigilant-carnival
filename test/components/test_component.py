@@ -14,8 +14,8 @@ class TestFighterComponent(unittest.TestCase):
         pygame.init()
 
         screen = pygame.display.set_mode((0, 0))
-        self.fighter_entity = entities.creature.Creature('floating_eye')
-        self.fighter_entity_2 = entities.creature.Creature('floating_eye')
+        self.fighter_entity = entities.creature.Creature('floating_eye', ID=0)
+        self.fighter_entity_2 = entities.creature.Creature('floating_eye', ID=1)
         self.fighter_entity.current_action = entities.actions.actions.MeleeAction(self.fighter_entity,
                                                                                   self.fighter_entity_2)
         self.fighter_entity.fighter_component = components.component.FighterComponent(self.fighter_entity, hp=100,

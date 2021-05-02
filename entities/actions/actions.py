@@ -58,5 +58,5 @@ class MeleeAction(BaseAction):
         self.melee_target.damaged = True
         self.melee_target.damage_taken = damage
         log.debug(
-            f'The {self.creature.name} kicks the {self.melee_target.name} for {damage}.')
+            f'The {self.creature.name}_{self.creature.ID} kicks the {self.melee_target.name}_{self.melee_target.ID} for {damage}.')
         return self.action_cost
