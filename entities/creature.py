@@ -56,7 +56,6 @@ class Creature(entities.entity.Entity):
         self.previous_y_pos = self.y_pos
         self.action_points = 0
         self.speed = 100
-        self.current_action = entities.actions.actions.RandomMoveAction(self)
         self.parent_scene: scenes.game_scene.GameScene = None
         self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
         self.facing = Facing.left
@@ -64,6 +63,7 @@ class Creature(entities.entity.Entity):
         self.damaged = False
         self.damage_taken = 0
         self.did_set_corpse_image = False
+        self.current_action = entities.actions.actions.ChasePlayerAction(self)
 
     def to_json(self):
         return {
@@ -163,7 +163,7 @@ class Creature(entities.entity.Entity):
         self.update()
 
     def take_turn(self) -> int:
-        self.current_action = entities.actions.actions.RandomMoveAction(self)
+        self.current_action = entities.actions.actions.ChasePlayerAction(self)
         return self.current_action.perform()
 
     def die(self):

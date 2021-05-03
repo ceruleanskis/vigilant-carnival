@@ -95,10 +95,10 @@ class MapHelpers:
                 else:
                     neighbor_tile.pathfind_distance = infinity
 
-                index_in_unchecked_tiles = MapHelpers.get_index(undiscovered_tiles, neighbor_tile)
-                checked_tiles.append(undiscovered_tiles[index_in_unchecked_tiles])
 
             undiscovered_tiles[smallest_distance_tile_index_in_unchecked_tiles].discovered = True
+            index_in_unchecked_tiles = MapHelpers.get_index(undiscovered_tiles, smallest_distance_tile)
+            checked_tiles.append(undiscovered_tiles[index_in_unchecked_tiles])
             undiscovered_tiles = [tile for tile in undiscovered_tiles if not tile.discovered]
 
         return checked_tiles

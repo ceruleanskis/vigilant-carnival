@@ -16,7 +16,7 @@ class Player(entities.creature.Creature):
         self.action_points = 0
         self.speed = 101
         self.current_action = None
-        self.fighter_component = components.component.FighterComponent(self, 10, 3)
+        self.fighter_component = components.component.FighterComponent(self, hp=100, strength=3)
         self.alive = True
 
     def handle_input(self, events, pressed_keys) -> typing.Union[entities.actions.actions.BaseAction, None]:

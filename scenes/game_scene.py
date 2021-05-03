@@ -47,6 +47,7 @@ class GameScene(Scene):
         self.background_image = pygame.transform.scale(background_image, (
             utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.background_surface = self.surface.copy()
+        self.distance_map = []
 
         self.background_rendered = False
         font_pixel_width = self.message_font.render("m", True, utilities.constants.BLACK).get_width()
@@ -62,8 +63,8 @@ class GameScene(Scene):
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
-            for i in range(20):
-                creature = entities.creature.Creature('floating_eye', ID=i + 1)
+            for i in range(10):
+                creature = entities.creature.Creature('floating_eye', ID=i + 2)
                 self.all_sprites.add(creature)
                 self.enemy_sprites.add(creature)
                 random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
@@ -80,14 +81,12 @@ class GameScene(Scene):
         self.time_manager.register(self.player)
 
         for critter in self.creatures:
-            if creature is not self.player:
+            if critter is not self.player:
                 self.time_manager.register(critter)
 
         self.block_input = False
 
-        self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
-            self.tile_map,
-            goal_pos=utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
+        self.update_distance_map()
 
     def add_map_tiles_to_sprite_list(self):
         for y in range(self.tile_map.height):
@@ -138,7 +137,11 @@ class GameScene(Scene):
     def update_creature_parent(self):
         for creature in self.creatures:
             creature.parent_scene = self
-            creature.distance_map = self.distance_map
+
+    def update_distance_map(self):
+        self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
+            self.tile_map,
+            goal_pos=utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
 
     def handle_input(self, events, pressed_keys):
         if not self.block_input:
@@ -147,6 +150,8 @@ class GameScene(Scene):
                 if self.player.current_action is not None:
                     self.update_creature_parent()
                     self.time_manager.tick()
+                    self.update_distance_map()
+
                 self.update_fov()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
@@ -163,9 +168,6 @@ class GameScene(Scene):
                                   10,
                                   self.tile_map.set_tile_visibility,
                                   self.tile_map.is_blocked_at_location)
-        self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
-            self.tile_map,
-            goal_pos=utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
 
     def update(self):
         for creature in self.creatures:
@@ -219,6 +221,14 @@ class GameScene(Scene):
         pygame.draw.rect(stats_display_surface, (174, 228, 237), stats_display_surface.get_rect().inflate(-10, -10), 3)
 
         return stats_display_surface
+
+    def render_turn_display(self) -> pygame.surface.Surface:
+        fps_display = self.stats_display_font.render(f'Turns: {self.time_manager.turns}', True, pygame.Color("blue"))
+        fps_rect = fps_display.get_rect()
+        fps_rect.x = utilities.constants.DISPLAY_WIDTH - 125
+        fps_rect.y = 0
+
+        return fps_display
 
     def render(self, screen):
 
@@ -278,6 +288,14 @@ class GameScene(Scene):
                            utilities.constants.STATS_DISPLAY_WIDTH,
                            utilities.constants.MESSAGE_LOG_HEIGHT
                            ])
+
+        if utilities.constants.TURN_COUNT_DISPLAY:
+            turn_display = self.render_turn_display()
+            self.surface.blit(turn_display,
+                              [0, 0,
+                               utilities.constants.STATS_DISPLAY_WIDTH,
+                               utilities.constants.MESSAGE_LOG_HEIGHT
+                               ])
 
         screen.blit(self.surface, self.surface.get_rect())
 
