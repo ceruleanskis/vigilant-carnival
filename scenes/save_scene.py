@@ -4,6 +4,7 @@ import pygame
 
 import scenes.director
 import utilities.constants
+import utilities.fonts
 import utilities.game_utils
 from components.scene import Scene
 
@@ -16,7 +17,7 @@ class SaveScene(Scene):
     def __init__(self, last_saved: str):
         Scene.__init__(self)
         pygame.font.init()
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = utilities.fonts.default(48)
         self.last_saved_text = self.font.render(f'Saved game to {last_saved}', True, utilities.constants.GREEN)
 
     def handle_input(self, events, pressed_keys):

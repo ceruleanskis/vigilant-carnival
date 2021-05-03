@@ -6,6 +6,7 @@ import pygame
 import scenes.director
 import scenes.game_scene
 import utilities.constants
+import utilities.fonts
 import utilities.game_utils as game_utils
 import utilities.logsetup
 import utilities.save_manager
@@ -21,8 +22,7 @@ class LoadScene(Scene):
 
     def __init__(self):
         Scene.__init__(self)
-        pygame.font.init()
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = utilities.fonts.default(28)
         self.menu_items = utilities.save_manager.SaveManager.get_save_list()
         self.selected_menu_item = 0
         self.no_saves_text = self.font.render('No saved games found.', True, utilities.constants.GREEN)

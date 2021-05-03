@@ -1,3 +1,4 @@
+import typing
 from typing import Union, IO, Tuple
 
 import pygame
@@ -6,7 +7,7 @@ import utilities
 import utilities.constants
 import utilities.logsetup
 
-logger = utilities.logsetup.log()
+log = utilities.logsetup.log()
 
 
 class GameUtils:
@@ -21,8 +22,13 @@ class GameUtils:
 
     @staticmethod
     def get_text_center_width(screen: Union[pygame.Surface, pygame.SurfaceType],
-                              text: Union[pygame.Surface, pygame.SurfaceType]):
+                              text: Union[pygame.Surface, pygame.SurfaceType]) -> int:
         return screen.get_width() // 2 - text.get_width() // 2
+
+    @staticmethod
+    def get_text_center(screen: Union[pygame.Surface, pygame.SurfaceType],
+                        text: Union[pygame.Surface, pygame.SurfaceType]) -> typing.Tuple[int, int]:
+        return GameUtils.get_text_center_width(screen, text), GameUtils.get_text_center_height(screen, text)
 
     @staticmethod
     def round_to_multiple(x: int, base: int) -> int:
@@ -44,18 +50,19 @@ class GameUtils:
         return fps_text
 
     @staticmethod
-    def load_sprite(path_from_root: Union[str, IO], colorkey: Tuple = None) -> pygame.Surface:
+    def load_sprite(path_from_root: Union[str, IO], colorkey: Tuple = None,
+                    convert_alpha: bool = None) -> pygame.Surface:
         full_path = f'{utilities.constants.ROOT_DIR}/{path_from_root}'
         try:
             image: pygame.Surface = pygame.image.load(full_path)
+            if convert_alpha:
+                image = image.convert_alpha()
             if colorkey:
                 image.set_colorkey(colorkey)
-            else:
-                image.convert_alpha()
             image = pygame.transform.scale(image, (utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
             return image
         except FileNotFoundError as err:
-            logger.error(f'ERROR: {full_path} does not exist.')
+            log.error(f'ERROR: {full_path} does not exist.')
             raise err
         except Exception as err:
             raise err

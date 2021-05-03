@@ -1,0 +1,6 @@
+{
+  "default": "assets/fonts/Space_Mono/SpaceMono-Regular.ttf",
+  "bold": "assets/fonts/Space_Mono/SpaceMono-Bold.ttf",
+  "italic": "assets/fonts/Space_Mono/SpaceMono-Italic.ttf",
+  "bold_italic": "assets/fonts/Space_Mono/SpaceMono-BoldItalic.ttf"
+}

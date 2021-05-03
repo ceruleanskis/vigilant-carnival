@@ -23,8 +23,7 @@ class TimeManager:
                 obj = self.time_deque[0]
                 self.time_deque.rotate(1)
                 obj.action_points += obj.speed
-                while obj.action_points > 0:
+                while obj.action_points > 0 and obj.current_action is not None:
                     cost = obj.take_turn()
                     obj.action_points -= cost
         self.turns += 1
-        log.debug(f"tick, turn:{self.turns}")

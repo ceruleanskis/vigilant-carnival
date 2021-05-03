@@ -5,29 +5,50 @@ import pygame
 
 import components.map
 import entities.entity
-import scenes.game_scene
 import utilities.constants
+import utilities.fonts
 import utilities.game_utils
 import utilities.load_data
+import utilities.logsetup
+
+font = utilities.fonts.default(24)
+
+log = utilities.logsetup.log()
+
 
 class Facing:
     left = 'left'
     right = 'right'
 
+
 class Creature(entities.entity.Entity):
-    def __init__(self, name: str):
-        super().__init__()
+    def __init__(self, name: str, ID: int):
+        import scenes.game_scene
+        import components.component
+
+        super().__init__(name)
+        self.ID = ID
         self.x_pos = 1
         self.y_pos = 1
 
-        self.name = name
+        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
+
+        self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
+            utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']
+        convert_alpha = True
+        if self.tileset_alpha is None:
+            convert_alpha = False
+
         self.images = [
             utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][0],
-                                                       (255, 255, 255)),
+                                                       self.tileset_alpha, convert_alpha),
             utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][1],
-                                                       (255, 255, 255))
+                                                       self.tileset_alpha, convert_alpha)
         ]
-        self.image = self.images[0]
+        self.image_num = 0
+        self.image = self.images[self.image_num].copy()
+        self.corpse_image = utilities.game_utils.GameUtils.load_sprite(
+            utilities.load_data.ENTITY_DATA[self.name]['corpse_image'])
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
@@ -35,13 +56,14 @@ class Creature(entities.entity.Entity):
         self.previous_y_pos = self.y_pos
         self.action_points = 0
         self.speed = 100
-        self.current_action = entities.actions.actions.RandomMoveAction(self)
         self.parent_scene: scenes.game_scene.GameScene = None
-        self.image_num = 0
-        self.image = self.images[0]
         self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
         self.facing = Facing.left
         self.facing_changed = False
+        self.damaged = False
+        self.damage_taken = 0
+        self.did_set_corpse_image = False
+        self.current_action = entities.actions.actions.ChasePlayerAction(self)
 
     def to_json(self):
         return {
@@ -60,6 +82,12 @@ class Creature(entities.entity.Entity):
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
+
+        try:
+            creature.tileset_alpha = json_obj['tileset_alpha']
+        except KeyError as err:
+            log.warning(f"Entity {creature.name} has no tileset alpha in JSON file.")
+
         return creature
 
     def move(self, direction: Tuple[int, int]):
@@ -103,24 +131,44 @@ class Creature(entities.entity.Entity):
         self.previous_y_pos = y_pos
 
     def update(self):
-        if pygame.time.get_ticks() >= self.next_move or self.facing_changed:
-            self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
-            if self.image_num == 0:
-                self.image_num = 1
-                self.image = self.images[1]
-            else:
-                self.image_num = 0
-                self.image = self.images[0]
+        if self.fighter_component and self.fighter_component.alive:
+            if pygame.time.get_ticks() >= self.next_move or self.facing_changed:
+                self.next_move = pygame.time.get_ticks() + 500  # animation every 0.5s = 500ms
+                self.update_facing()
+                if self.damaged:
+                    self.update_damage_display()
+        else:
+            pass
 
-            if self.facing == Facing.right:
-                self.image = pygame.transform.flip(self.image, True, False)
+    def update_facing(self):
+        if self.image_num == 0:
+            self.image_num = 1
+        else:
+            self.image_num = 0
+        self.image = self.images[self.image_num].copy()
+        if self.facing == Facing.right:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.facing_changed = False
 
-            self.facing_changed = False
+    def update_damage_display(self):
+        self.image = self.images[self.image_num].copy()
+        self.image.fill((255, 0, 0, 255), special_flags=pygame.BLEND_MULT)
+        damage_text = font.render(str(self.damage_taken), True, utilities.constants.RED)
+        self.image.blit(damage_text, self.image.get_rect())
+        self.damaged = False
+        self.damage_taken = 0
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.teleport(self.x_pos, self.y_pos)
         self.update()
 
     def take_turn(self) -> int:
-        self.current_action = entities.actions.actions.RandomMoveAction(self)
+        self.current_action = entities.actions.actions.ChasePlayerAction(self)
         return self.current_action.perform()
+
+    def die(self):
+        self.image = self.corpse_image
+        self.did_set_corpse_image = True
+        self.fighter_component = None
+        self.blocks = False
+        self.current_action = None
