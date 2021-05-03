@@ -26,7 +26,7 @@ requests==2.25.0
 scipy==1.6.3
 six==1.15.0
 snowballstemmer==2.1.0
-Sphinx==3.3.1
+Sphinx==3.5.4
 sphinx-theme==1.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
