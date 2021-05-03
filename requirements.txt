@@ -7,7 +7,7 @@ click==7.1.2
 commonmark==0.9.1
 coverage==5.3
 docutils==0.16
-idna==2.10
+idna==3.1
 imagesize==1.2.0
 importlib-metadata==3.3.0
 Jinja2==2.11.3
