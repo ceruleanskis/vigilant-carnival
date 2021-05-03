@@ -6,6 +6,10 @@ import pygame
 import components.component
 import entities.actions.actions
 import entities.creature
+import entities.item
+import utilities.logsetup
+
+log = utilities.logsetup.log()
 
 
 class Player(entities.creature.Creature):
@@ -53,24 +57,14 @@ class Player(entities.creature.Creature):
                         return self.current_action
                     else:
                         return None
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    self.current_action = entities.actions.actions.PickUpItemAction(self)
+                    return self.current_action
             else:
                 self.alive = False
 
     def move(self, direction: Tuple[int, int]):
         super(Player, self).move(direction)
-        # # Keep player on the screen
-        #
-        # if self.rect.left < 0:
-        #     self.rect.left = 0
-        #
-        # if self.rect.right > SCREEN_WIDTH:
-        #     self.rect.right = SCREEN_WIDTH
-        #
-        # if self.rect.top <= 0:
-        #     self.rect.top = 0
-        #
-        # if self.rect.bottom >= SCREEN_HEIGHT:
-        #     self.rect.bottom = SCREEN_HEIGHT
 
     def take_turn(self) -> int:
         cost = self.current_action.perform()

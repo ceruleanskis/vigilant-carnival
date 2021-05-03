@@ -5,6 +5,7 @@ import pygame
 
 import components.map
 import entities.entity
+import entities.item
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
@@ -64,6 +65,7 @@ class Creature(entities.entity.Entity):
         self.damage_taken = 0
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
+        self.inventory: typing.List[entities.item.Item] = []
 
     def to_json(self):
         return {
@@ -121,6 +123,13 @@ class Creature(entities.entity.Entity):
                 return tile
 
         return None
+
+    def moved_to_item(self) -> typing.Union[None, 'Creature', components.map.Tile]:
+        for item in self.parent_scene.items:
+            if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
+                return item
+        return  None
+
 
     def teleport(self, x_pos, y_pos):
         self.rect.x = x_pos * utilities.constants.TILE_SIZE

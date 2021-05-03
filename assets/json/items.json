@@ -1,0 +1,13 @@
+{
+  "medkit": {
+    "id": 0,
+    "name": "medkit",
+    "ascii": "@",
+    "image": "assets/tilesets/main/items/medkit.png",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  }
+}
