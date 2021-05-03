@@ -21,7 +21,7 @@ pyinstaller==4.1
 pyinstaller-hooks-contrib==2020.10
 pyparsing==2.4.7
 pytz==2021.1
-recommonmark==0.6.0
+recommonmark==0.7.1
 requests==2.25.0
 scipy==1.5.4
 six==1.15.0
