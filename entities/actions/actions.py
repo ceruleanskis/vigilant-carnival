@@ -42,6 +42,24 @@ class MoveAction(BaseAction):
             raise AttributeError
 
 
+class PickUpItemAction(BaseAction):
+    def __init__(self, creature: entities.creature.Creature):
+        super().__init__(creature)
+        self.action_cost = 100
+
+    def perform(self) -> int:
+        item = self.creature.moved_to_item()
+        if item is None:
+            return 0
+        elif isinstance(item, entities.item.Item):
+            item.disappear()
+            self.creature.inventory.append(item)
+            log.info(f"You picked up a {item.name}.")
+            return self.action_cost
+        else:
+            raise AttributeError
+
+
 class TeleportAction(BaseAction):
     def __init__(self, creature: entities.creature.Creature, pos: utilities.ship_generator.Coordinate):
         super().__init__(creature)

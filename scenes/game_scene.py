@@ -38,10 +38,12 @@ class GameScene(Scene):
         self.all_sprites = pygame.sprite.Group()
         self.map_sprites = pygame.sprite.Group()
         self.enemy_sprites = pygame.sprite.Group()
+        self.item_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.creatures: typing.List[entities.creature.Creature] = []
+        self.items: typing.List[entities.item.Item] = []
         self.time_manager = systems.time_manager.TimeManager()
         background_image = pygame.image.load(utilities.load_data.BACKGROUND_IMAGE_DATA['space']['image']).convert()
         self.background_image = pygame.transform.scale(background_image, (
@@ -63,14 +65,22 @@ class GameScene(Scene):
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
-            for i in range(10):
-                creature = entities.creature.Creature('floating_eye', ID=i + 2)
-                self.all_sprites.add(creature)
-                self.enemy_sprites.add(creature)
-                random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-                creature.x_pos = random_pos.x
-                creature.y_pos = random_pos.y
-                self.creatures.append(creature)
+            item = entities.item.Item('medkit', ID=2)
+            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+            item.x_pos = random_pos.x
+            item.y_pos = random_pos.y
+            self.all_sprites.add(item)
+            self.item_sprites.add(item)
+            self.items.append(item)
+
+            # for i in range(10):
+            #     creature = entities.creature.Creature('floating_eye', ID=i + 3)
+            #     self.all_sprites.add(creature)
+            #     self.enemy_sprites.add(creature)
+            #     random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+            #     creature.x_pos = random_pos.x
+            #     creature.y_pos = random_pos.y
+            #     self.creatures.append(creature)
         else:
             self.load(loaded_json)
 
@@ -134,9 +144,12 @@ class GameScene(Scene):
         self.player.y_pos = player_pos.y
         self.player.teleport(self.player.x_pos, self.player.y_pos)
 
-    def update_creature_parent(self):
+    def update_parent(self):
         for creature in self.creatures:
             creature.parent_scene = self
+
+        for item in self.items:
+            item.parent_scene = self
 
     def update_distance_map(self):
         self.distance_map = utilities.map_helpers.MapHelpers.get_distance_map(
@@ -148,13 +161,18 @@ class GameScene(Scene):
             for event in events:
                 self.player.handle_input(events, pressed_keys)
                 if self.player.current_action is not None:
-                    self.update_creature_parent()
+                    self.update_parent()
                     self.time_manager.tick()
                     self.update_distance_map()
 
                 self.update_fov()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
+                    self.look()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                    log.info(f"Inventory: {[item.name for item in self.player.inventory]}")
+                    return None
 
         if not self.player.alive:
             log.debug('DEAD')
@@ -269,6 +287,12 @@ class GameScene(Scene):
                         enemy.render(screen)
                         self.surface.blit(enemy.image, tile_rect)
 
+                for item in self.item_sprites:
+                    item.visible = self.tile_map.tile_map[start_x][start_y].visible
+                    if item.image is not None and item.visible and item.x_pos == start_x and item.y_pos == start_y:
+                        item.render(screen)
+                        self.surface.blit(item.image, tile_rect)
+
                 if self.player.x_pos == start_x and self.player.y_pos == start_y:
                     self.player.render(screen)
                     self.surface.blit(self.player.image, tile_rect)
@@ -309,3 +333,13 @@ class GameScene(Scene):
                                           tile_rect[2],
                                           tile_rect[3]
                                           ])
+
+    def look(self):
+        looked_at_item = False
+        for item in self.items:
+            if self.player.x_pos == item.x_pos and self.player.y_pos == item.y_pos:
+                log.info(item.name.capitalize())
+                looked_at_item = True
+        if not looked_at_item:
+            tile = self.tile_map.tile_map[self.player.x_pos][self.player.y_pos]
+            log.info(tile.name.capitalize())

@@ -1,5 +1,6 @@
 import entities.creature
 import entities.entity
+import entities.item
 import utilities.logsetup
 
 log = utilities.logsetup.log()
@@ -8,6 +9,11 @@ log = utilities.logsetup.log()
 class BaseComponent:
     def __init__(self, entity: entities.entity.Entity):
         self.entity = entity
+
+
+class ItemComponent(BaseComponent, object):
+    def __init__(self, entity: entities.item.Item):
+        pass
 
 
 class FighterComponent(BaseComponent, object):

@@ -19,6 +19,10 @@ with open(f'{utilities.constants.ROOT_DIR}/assets/json/entities.json') as json_f
     ENTITY_DATA = json.load(json_file)
 log.info(f'Loaded assets/json/entities.json.')
 
+with open(f'{utilities.constants.ROOT_DIR}/assets/json/items.json') as json_file:
+    ITEM_DATA = json.load(json_file)
+log.info(f'Loaded assets/json/items.json.')
+
 with open(f'{utilities.constants.ROOT_DIR}/assets/json/background_images.json') as json_file:
     BACKGROUND_IMAGE_DATA = json.load(json_file)
 log.info(f'Loaded assets/json/background_images.json.')
