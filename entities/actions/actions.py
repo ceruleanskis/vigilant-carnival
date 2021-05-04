@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 import components.map
 import entities.creature
+import entities.item
 import utilities.logsetup
 import utilities.map_helpers
 import utilities.ship_generator
@@ -25,6 +26,22 @@ class BaseAction(ABC):
         pass
 
 
+class ItemAction(BaseAction):
+    def __init__(self, creature: entities.creature.Creature, item: entities.item.Item,
+                 target_xy: typing.Optional[utilities.ship_generator.Coordinate] = None):
+        super().__init__(creature)
+
+        self.item = item
+        if not target_xy:
+            target_xy = creature.x_pos, creature.y_pos
+        self.target_xy = target_xy
+
+    def perform(self) -> int:
+        if self.item is None:
+            raise Exception
+        return self.item.consumable.activate(self)
+
+
 class MoveAction(BaseAction):
     def __init__(self, creature: entities.creature.Creature, direction: typing.Tuple[int, int]):
         super().__init__(creature)
@@ -43,18 +60,18 @@ class MoveAction(BaseAction):
 
 
 class PickUpItemAction(BaseAction):
-    def __init__(self, creature: entities.creature.Creature):
+    def __init__(self, creature: entities.creature.Creature, item: entities.item.Item):
         super().__init__(creature)
         self.action_cost = 100
+        self.item = item
 
     def perform(self) -> int:
-        item = self.creature.moved_to_item()
-        if item is None:
-            return 0
-        elif isinstance(item, entities.item.Item):
-            item.disappear()
-            self.creature.inventory.append(item)
-            log.info(f"You picked up a {item.name}.")
+        if self.item is None:
+            raise Exception
+        elif isinstance(self.item, entities.item.Item):
+            self.item.disappear()
+            self.creature.inventory.append(self.item)
+            log.info(f"You picked up a {self.item.name}.")
             return self.action_cost
         else:
             raise AttributeError
@@ -125,7 +142,5 @@ class MeleeAction(BaseAction):
         damage = self.creature.fighter_component.strength
         log.debug(
             f'The {self.creature.name}_{self.creature.ID} kicks the {self.melee_target.name}_{self.melee_target.ID} for {damage}.')
-        self.melee_target.fighter_component.hp -= damage
-        self.melee_target.damaged = True
-        self.melee_target.damage_taken = damage
+        self.melee_target.fighter_component.take_damage(damage)
         return self.action_cost

@@ -75,14 +75,14 @@ class GameScene(Scene):
             self.item_sprites.add(item)
             self.items.append(item)
 
-            # for i in range(10):
-            #     creature = entities.creature.Creature('floating_eye', ID=i + 3)
-            #     self.all_sprites.add(creature)
-            #     self.enemy_sprites.add(creature)
-            #     random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            #     creature.x_pos = random_pos.x
-            #     creature.y_pos = random_pos.y
-            #     self.creatures.append(creature)
+            for i in range(10):
+                creature = entities.creature.Creature('floating_eye', ID=i + 3)
+                self.all_sprites.add(creature)
+                self.enemy_sprites.add(creature)
+                random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+                creature.x_pos = random_pos.x
+                creature.y_pos = random_pos.y
+                self.creatures.append(creature)
         else:
             self.load(loaded_json)
 

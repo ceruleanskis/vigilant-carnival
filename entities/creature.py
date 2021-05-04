@@ -5,7 +5,6 @@ import pygame
 
 import components.map
 import entities.entity
-import entities.item
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
@@ -26,6 +25,7 @@ class Creature(entities.entity.Entity):
     def __init__(self, name: str, ID: int):
         import scenes.game_scene
         import components.component
+        import entities.item
 
         super().__init__(name)
         self.ID = ID
@@ -125,11 +125,11 @@ class Creature(entities.entity.Entity):
         return None
 
     def moved_to_item(self) -> typing.Union[None, 'Creature', components.map.Tile]:
-        for item in self.parent_scene.items:
-            if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
-                return item
-        return  None
-
+        if self.parent_scene and self.parent_scene.items:
+            for item in self.parent_scene.items:
+                if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
+                    return item
+        return None
 
     def teleport(self, x_pos, y_pos):
         self.rect.x = x_pos * utilities.constants.TILE_SIZE

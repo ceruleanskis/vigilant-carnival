@@ -4,6 +4,12 @@
     "name": "medkit",
     "ascii": "@",
     "image": "assets/tilesets/main/items/medkit.png",
+    "consumable": [
+      {
+        "type": "HealingConsumable",
+        "amount": 20
+      }
+    ],
     "tileset_alpha": [
       255,
       255,

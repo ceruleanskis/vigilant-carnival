@@ -1,6 +1,5 @@
 import entities.creature
 import entities.entity
-import entities.item
 import utilities.logsetup
 
 log = utilities.logsetup.log()
@@ -12,8 +11,10 @@ class BaseComponent:
 
 
 class ItemComponent(BaseComponent, object):
+    import entities.item
+
     def __init__(self, entity: entities.item.Item):
-        pass
+        super().__init__(entity)
 
 
 class FighterComponent(BaseComponent, object):
@@ -40,3 +41,20 @@ class FighterComponent(BaseComponent, object):
         log.info(f"{self.entity.name}_{self.entity.ID} died.")
         self.alive = False
         self.entity.die()
+
+    def take_damage(self, damage: int):
+        self.hp -= damage
+        self.entity.damaged = True
+        self.entity.damage_taken = damage
+
+    def heal(self, amount: int) -> int:
+        if self.hp == self.max_hp:
+            return 0
+
+        new_hp_value = self.hp + amount
+        if new_hp_value > self.max_hp:
+            new_hp_value = self.max_hp
+
+        amount_recovered = new_hp_value - self.hp
+        self.hp = new_hp_value
+        return amount_recovered

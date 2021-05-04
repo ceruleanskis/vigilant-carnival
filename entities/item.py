@@ -9,12 +9,15 @@ import utilities.game_utils
 import utilities.load_data
 import utilities.map_helpers
 
+log = utilities.logsetup.log()
+
 
 class Item(entities.entity.Entity):
 
     def __init__(self, name: str, ID: int):
         import components.component
         import scenes.game_scene
+        import components.consumable
 
         super().__init__(name)
         self.ID = ID
@@ -38,13 +41,22 @@ class Item(entities.entity.Entity):
         # self.previous_x_pos = self.x_pos
         # self.previous_y_pos = self.y_pos
         self.parent_scene: scenes.game_scene.GameScene = None
+        self.consumable = None
+        self.load_consumables()
 
     def disappear(self):
         self.image = None
         self.blocks = False
-        index = self.get_index(self.parent_scene.items, self)
         self.parent_scene.items.remove(self)
-        print(index)
+        self.parent_scene.item_sprites.remove(self)
+        self.parent_scene.all_sprites.remove(self)
+
+    def destroy(self, consumer: entities.creature.Creature):
+        if self in consumer.inventory:
+            self.consumable = None
+            consumer.inventory.remove(self)
+        else:
+            log.warning(f"Could not remove {self.name} from inventory.")
 
     @staticmethod
     def get_index(item_list, item):
@@ -57,3 +69,25 @@ class Item(entities.entity.Entity):
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         # self.teleport(self.x_pos, self.y_pos)
         self.update()
+
+    def load_consumables(self):
+        import components.consumable
+
+        if "consumable" in utilities.load_data.ITEM_DATA[self.name]:
+            consumable_type = None
+            if "type" in utilities.load_data.ITEM_DATA[self.name]["consumable"][0]:
+                consumable_type = utilities.load_data.ITEM_DATA[self.name]["consumable"][0]['type']
+            else:
+                log.debug(f'No type found for {self.name} {["consumable"][0]} in items.json.')
+
+            if consumable_type == "HealingConsumable":
+                if "amount" in utilities.load_data.ITEM_DATA[self.name]["consumable"][0]:
+                    amount = utilities.load_data.ITEM_DATA[self.name]["consumable"][0]["amount"]
+                    self.consumable = components.consumable.HealingConsumable(amount, entity=self)
+                else:
+                    log.debug(f'No amount found for HealingConsumable {self.name} in items.json.')
+            else:
+                log.debug(f'Consumable type {consumable_type} not found.')
+        else:
+            log.info("None type consumable")
+            self.consumable = None
