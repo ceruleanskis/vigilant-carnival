@@ -7,6 +7,8 @@ import components.camera
 import components.map
 import entities.creature
 import entities.player
+import entities.item
+import components.consumable
 import scenes.death_scene
 import scenes.director
 import scenes.menu_scene
@@ -158,14 +160,14 @@ class GameScene(Scene):
 
     def handle_input(self, events, pressed_keys):
         if not self.block_input:
-            for event in events:
-                self.player.handle_input(events, pressed_keys)
-                if self.player.current_action is not None:
-                    self.update_parent()
-                    self.time_manager.tick()
-                    self.update_distance_map()
+            self.player.handle_input(events, pressed_keys)
+            if self.player.current_action is not None:
+                self.update_parent()
+                self.time_manager.tick()
+                self.update_distance_map()
 
-                self.update_fov()
+            self.update_fov()
+            for event in events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
