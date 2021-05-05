@@ -204,7 +204,7 @@ class GameScene(Scene):
         message_log_surface = pygame.surface.Surface((utilities.constants.MESSAGE_LOG_WIDTH,
                                                       utilities.constants.MESSAGE_LOG_HEIGHT))
         message_log_surface.fill(utilities.constants.DARK_BLUE)
-        pygame.draw.rect(message_log_surface, (174, 228, 237), message_log_surface.get_rect().inflate(-10, -10), 3)
+        pygame.draw.rect(message_log_surface, utilities.constants.LIGHT_BLUE, message_log_surface.get_rect().inflate(-10, -10), 3)
 
         for i in range(len(utilities.messages.message_log.messages)):
             message = utilities.messages.message_log.messages[i]
@@ -243,7 +243,7 @@ class GameScene(Scene):
                                                     health_display.get_width(),
                                                     health_display.get_height()])
 
-        pygame.draw.rect(stats_display_surface, (174, 228, 237), stats_display_surface.get_rect().inflate(-10, -10), 3)
+        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE, stats_display_surface.get_rect().inflate(-10, -10), 3)
 
         return stats_display_surface
 
