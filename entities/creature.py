@@ -26,6 +26,7 @@ class Creature(entities.entity.Entity):
         import scenes.game_scene
         import components.component
         import entities.item
+        import entities.actions.actions
 
         super().__init__(name)
         self.ID = ID
@@ -61,8 +62,8 @@ class Creature(entities.entity.Entity):
         self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
         self.facing = Facing.left
         self.facing_changed = False
-        self.damaged = False
-        self.damage_taken = 0
+        self.health_modified = False
+        self.health_modified_amount = 0
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
         self.inventory: typing.List[entities.item.Item] = []
@@ -144,7 +145,7 @@ class Creature(entities.entity.Entity):
             if pygame.time.get_ticks() >= self.next_move or self.facing_changed:
                 self.next_move = pygame.time.get_ticks() + 500  # animation every 0.5s = 500ms
                 self.update_facing()
-                if self.damaged:
+                if self.health_modified:
                     self.update_damage_display()
         else:
             pass
@@ -161,11 +162,17 @@ class Creature(entities.entity.Entity):
 
     def update_damage_display(self):
         self.image = self.images[self.image_num].copy()
-        self.image.fill((255, 0, 0, 255), special_flags=pygame.BLEND_MULT)
-        damage_text = font.render(str(self.damage_taken), True, utilities.constants.RED)
+
+        if self.health_modified_amount > 0:
+            color = utilities.constants.GREEN
+        else:
+            color = utilities.constants.RED
+
+        self.image.fill(color, special_flags=pygame.BLEND_MULT)
+        damage_text = font.render(str(abs(self.health_modified_amount)), True, color)
         self.image.blit(damage_text, self.image.get_rect())
-        self.damaged = False
-        self.damage_taken = 0
+        self.health_modified = False
+        self.health_modified_amount = 0
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.teleport(self.x_pos, self.y_pos)

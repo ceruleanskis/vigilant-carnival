@@ -44,8 +44,8 @@ class FighterComponent(BaseComponent, object):
 
     def take_damage(self, damage: int):
         self.hp -= damage
-        self.entity.damaged = True
-        self.entity.damage_taken = damage
+        self.entity.health_modified = True
+        self.entity.health_modified_amount = -damage
 
     def heal(self, amount: int) -> int:
         if self.hp == self.max_hp:
@@ -57,4 +57,6 @@ class FighterComponent(BaseComponent, object):
 
         amount_recovered = new_hp_value - self.hp
         self.hp = new_hp_value
+        self.entity.health_modified = True
+        self.entity.health_modified_amount = amount_recovered
         return amount_recovered
