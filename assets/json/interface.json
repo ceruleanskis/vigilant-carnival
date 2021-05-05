@@ -1,3 +1,22 @@
 {
-  "health": "assets/tilesets/main/interface/heart.png"
+  "health": "assets/tilesets/main/interface/heart.png",
+  "inventory_top_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_417.png",
+  "inventory_top": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_418.png",
+  "inventory_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_419.png",
+  "inventory_top_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_421.png",
+  "inventory_bottom_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_445.png",
+  "inventory_bottom": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_446.png",
+  "inventory_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_447.png",
+  "inventory_bottom_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_448.png",
+  "inventory_middle":"assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_9999.png",
+  "inventory_middle_outline": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_252.png",
+  "description_top_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_869.png",
+  "description_top": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_870.png",
+  "description_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_891.png",
+  "description_top_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_871.png",
+  "description_bottom_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_923.png",
+  "description_bottom": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_924.png",
+  "description_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_893.png",
+  "description_bottom_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_925.png",
+  "description_middle":"assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_892.png"
 }

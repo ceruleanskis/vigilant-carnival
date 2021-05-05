@@ -12,6 +12,7 @@ import components.consumable
 import scenes.death_scene
 import scenes.director
 import scenes.menu_scene
+import scenes.inventory_scene
 import systems.time_manager
 import utilities.constants
 import utilities.fonts
@@ -87,6 +88,10 @@ class GameScene(Scene):
             self.load(loaded_json)
 
         self.player = entities.player.Player()
+        for i in range(4):
+            item = entities.item.Item('medkit', ID=i)
+            self.player.inventory.append(item)
+
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
         self.creatures.append(self.player)
@@ -173,7 +178,7 @@ class GameScene(Scene):
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
                     self.look()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
-                    log.info(f"Inventory: {[item.name for item in self.player.inventory]}")
+                    self.switch_scene(scenes.inventory_scene.InventoryScene(self.player))
                     return None
 
         if not self.player.alive:

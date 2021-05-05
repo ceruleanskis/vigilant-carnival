@@ -67,7 +67,9 @@ class Player(entities.creature.Creature):
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
                     item = self.consume_item()
                     if item is not None and isinstance(item, entities.item.Item):
-                        if isinstance(item.consumable, components.consumable.HealingConsumable) and self.fighter_component.hp >= self.fighter_component.max_hp:
+                        if isinstance(item.consumable, components.consumable.HealingConsumable) \
+                                and self.fighter_component.hp >= self.fighter_component.max_hp:
+                            log.info("Your health is already full.")
                             return None
                         self.current_action = entities.actions.actions.ItemAction(self, item)
                     else:

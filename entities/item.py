@@ -33,19 +33,17 @@ class Item(entities.entity.Entity):
 
         self.image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ITEM_DATA[self.name]['image'],
                                                                 self.tileset_alpha, convert_alpha)
+        self.type = utilities.load_data.ITEM_DATA[self.name]['type']
+        self.description = utilities.load_data.ITEM_DATA[self.name]['description']
         self.image_num = 0
-        # self.image = self.image[self.image_num].copy()
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
-        # self.previous_x_pos = self.x_pos
-        # self.previous_y_pos = self.y_pos
         self.parent_scene: scenes.game_scene.GameScene = None
         self.consumable = None
         self.load_consumables()
 
     def disappear(self):
-        self.image = None
         self.blocks = False
         self.parent_scene.items.remove(self)
         self.parent_scene.item_sprites.remove(self)
