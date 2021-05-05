@@ -18,5 +18,8 @@
   "description_bottom": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_924.png",
   "description_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_893.png",
   "description_bottom_right": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_925.png",
-  "description_middle":"assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_892.png"
+  "description_middle":"assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_892.png",
+  "button_left":"assets/tilesets/main/interface/buttons/oryx_16bit_scifi_interface_480.png",
+  "button_middle":"assets/tilesets/main/interface/buttons/oryx_16bit_scifi_interface_481.png",
+  "button_right":"assets/tilesets/main/interface/buttons/oryx_16bit_scifi_interface_482.png"
 }

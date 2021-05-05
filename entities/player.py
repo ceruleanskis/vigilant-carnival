@@ -64,27 +64,19 @@ class Player(entities.creature.Creature):
                         return self.current_action
                     else:
                         return None
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
-                    item = self.consume_item()
-                    if item is not None and isinstance(item, entities.item.Item):
-                        if isinstance(item.consumable, components.consumable.HealingConsumable) \
-                                and self.fighter_component.hp >= self.fighter_component.max_hp:
-                            log.info("Your health is already full.")
-                            return None
-                        self.current_action = entities.actions.actions.ItemAction(self, item)
-                    else:
-                        return None
-                    return self.current_action
             else:
                 self.alive = False
 
     def move(self, direction: Tuple[int, int]):
         super(Player, self).move(direction)
 
-    def consume_item(self):
-        if len(self.inventory) > 0:
-            item = self.inventory[0]
-            return item
+    def consume_item(self, item):
+        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
+            if isinstance(item.consumable, components.consumable.HealingConsumable) \
+                    and self.fighter_component.hp >= self.fighter_component.max_hp:
+                log.info("Your health is already full.")
+                return None
+            self.current_action = entities.actions.actions.ItemAction(self, item)
         else:
             return None
 

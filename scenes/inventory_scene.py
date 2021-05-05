@@ -25,11 +25,15 @@ class InventoryScene(Scene):
 
     def __init__(self, player: entities.player.Player):
         Scene.__init__(self)
+        self.should_render_action_menu = False
         self.font = utilities.fonts.bold(20)
         self.image_files = {}
         self.player = player
         self.menu_items = copy.copy(self.player.inventory)
         self.selected_menu_item = 0
+        self.action_menu_items = ["CANCEL", "CONSUME", "DROP"]
+        self.selected_action_menu_item = 0
+
         self.inventory_rows = 8
         self.inventory_cols = 8
         self.inventory_size = 36
@@ -40,20 +44,66 @@ class InventoryScene(Scene):
     def handle_input(self, events, pressed_keys):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                scenes.director.pop()
+                if self.should_render_action_menu:
+                    self.should_render_action_menu = False
+                    self.selected_action_menu_item = 0
+                else:
+                    scenes.director.pop()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                self.should_render_action_menu = True
+                if self.should_render_action_menu:
+                    self.take_action_menu_action()
+                elif len(self.player.inventory) > self.selected_menu_item:
+                    self.should_render_action_menu = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                self.traverse_menu((-1, 0))
+                if self.should_render_action_menu:
+                    self.traverse_action_menu(-1)
+                else:
+                    self.traverse_menu((-1, 0))
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                self.traverse_menu((1, 0))
+                if self.should_render_action_menu:
+                    self.traverse_action_menu(1)
+                else:
+                    self.traverse_menu((1, 0))
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.traverse_menu((0, -1))
+                if not self.should_render_action_menu:
+                    self.traverse_menu((0, -1))
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.traverse_menu((0, 1))
+                if not self.should_render_action_menu:
+                    self.traverse_menu((0, 1))
 
     def update(self):
         pass
+
+    def take_action_menu_action(self):
+        if self.selected_action_menu_item == 0:
+            print("cancel")
+            self.should_render_action_menu = False
+        elif self.selected_action_menu_item == 1:
+            self.player.consume_item(self.player.inventory[self.selected_menu_item])
+            scenes.director.pop()
+            print("consume")
+        elif self.selected_action_menu_item == 2:
+            print("drop")
+
+    def traverse_action_menu(self, direction) -> None:
+        """
+        Cycles up and down the menu in the direction specified.
+
+        :param direction: the direction to go in the menu list; up (-1) or down (1)
+        :type direction: int
+        :return: None
+        :rtype: None
+        """
+        if direction == -1:
+            if self.selected_action_menu_item == 0:
+                self.selected_action_menu_item = len(self.action_menu_items) - 1
+            else:
+                self.selected_action_menu_item -= 1
+        elif direction == 1:
+            if self.selected_action_menu_item == len(self.action_menu_items) - 1:
+                self.selected_action_menu_item = 0
+            else:
+                self.selected_action_menu_item += 1
 
     def traverse_menu(self, direction: typing.Tuple[int, int]) -> None:
         """
@@ -109,6 +159,10 @@ class InventoryScene(Scene):
         description_bottom_right = utilities.load_data.INTERFACE_DATA['description_bottom_right']
         description_middle = utilities.load_data.INTERFACE_DATA['description_middle']
 
+        button_left = utilities.load_data.INTERFACE_DATA['button_left']
+        button_middle = utilities.load_data.INTERFACE_DATA['button_middle']
+        button_right = utilities.load_data.INTERFACE_DATA['button_right']
+
         self.image_files = {
             'inventory_top_left': load_and_scale_image(inventory_top_left),
             'inventory_top': load_and_scale_image(inventory_top),
@@ -123,13 +177,18 @@ class InventoryScene(Scene):
             'description_top_left': load_and_scale_image(description_top_left),
             'description_top': load_and_scale_image(description_top),
             'description_left': load_and_scale_image(description_left),
-            'description_top_right': load_and_scale_image(description_top_right).convert_alpha(),
+            'description_top_right': load_and_scale_image(description_top_right),
             'description_bottom_left': load_and_scale_image(description_bottom_left),
             'description_bottom': load_and_scale_image(description_bottom),
             'description_right': load_and_scale_image(description_right),
             'description_bottom_right': load_and_scale_image(description_bottom_right),
-            'description_middle': load_and_scale_image(description_middle)
+            'description_middle': load_and_scale_image(description_middle),
+            'button_left': load_and_scale_image(button_left),
+            'button_middle': load_and_scale_image(button_middle),
+            'button_right': load_and_scale_image(button_right),
         }
+
+        # self.image_files['description_top_right'].set_colorkey((0,0,0))
 
     def render_inventory_menu(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.render_box(self.inventory_surface, 'inventory', self.inventory_cols, self.inventory_rows)
@@ -170,6 +229,8 @@ class InventoryScene(Scene):
         self.load_inventory_images(screen)
         self.render_item_description_box(screen)
         self.render_inventory_menu(screen)
+        if self.should_render_action_menu:
+            self.render_action_menu(screen)
 
     def render_box(self, surface, box_type, num_cols, num_rows):
         # Blit the corners
@@ -254,6 +315,36 @@ class InventoryScene(Scene):
                 self.inventory_surface_display_rect[1] - (utilities.constants.TILE_SIZE * 2),
                 text_surf_rect[0],
                 text_surf_rect[1]))
+
+    def render_action_menu(self, screen):
+        action_menu_rows = 1
+        action_menu_cols = 8
+        action_menu_surf = pygame.surface.Surface(
+            (utilities.constants.TILE_SIZE * 12, utilities.constants.TILE_SIZE * (action_menu_rows)))
+        # action_menu_surf.fill(utilities.constants.RED)
+        action_menu_surf_rect = utilities.game_utils.GameUtils.get_text_center(screen, action_menu_surf)
+        # self.render_box(action_menu_surf, 'inventory', action_menu_cols, action_menu_rows)
+
+        for i in range(0, 3):
+            action_font = self.font.render(self.action_menu_items[i], True, utilities.constants.WHITE)
+
+            surf = pygame.surface.Surface((utilities.constants.TILE_SIZE * 2, utilities.constants.TILE_SIZE))
+            rect1 = action_menu_surf.blit(self.image_files['button_left'], (i * (utilities.constants.TILE_SIZE * 3), 0))
+            rect2 = action_menu_surf.blit(self.image_files['button_right'],
+                                  (utilities.constants.TILE_SIZE + (utilities.constants.TILE_SIZE * 3 * i), 0))
+
+            rect = utilities.game_utils.GameUtils.get_text_center(surf, action_font)
+            action_menu_surf.blit(action_font, (rect[0] + utilities.constants.TILE_SIZE * 3 * i, rect[1] - 3))
+            if self.selected_action_menu_item == i:
+                rect = pygame.Rect(rect1.left, rect1.top, utilities.constants.TILE_SIZE * 2, utilities.constants.TILE_SIZE)
+                rect = rect.inflate(-12, -12)
+                pygame.draw.rect(action_menu_surf, utilities.constants.RED, rect, 5)
+
+            screen.blit(action_menu_surf, (
+                self.inventory_surface_display_rect[0] - (utilities.constants.TILE_SIZE * 2),
+                self.inventory_surface_display_rect[1] + (utilities.constants.TILE_SIZE * (self.inventory_rows - 2)),
+                action_menu_surf_rect[0],
+                action_menu_surf_rect[1]))
 
 
 def load_and_scale_image(filename: str):
