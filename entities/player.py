@@ -8,6 +8,7 @@ import entities.actions.actions
 import entities.creature
 import entities.item
 import utilities.logsetup
+import utilities.ship_generator
 
 log = utilities.logsetup.log()
 
@@ -70,7 +71,7 @@ class Player(entities.creature.Creature):
     def move(self, direction: Tuple[int, int]):
         super(Player, self).move(direction)
 
-    def consume_item(self, item):
+    def consume_item(self, item: entities.item.Item):
         if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
             if isinstance(item.consumable, components.consumable.HealingConsumable) \
                     and self.fighter_component.hp >= self.fighter_component.max_hp:
@@ -79,6 +80,12 @@ class Player(entities.creature.Creature):
             self.current_action = entities.actions.actions.ItemAction(self, item)
         else:
             return None
+
+    def drop_item(self, item: entities.item.Item):
+        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
+            self.parent_scene.place_item(item,
+                                         utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
+            item.destroy(self)
 
     def take_turn(self) -> int:
         cost = self.current_action.perform()

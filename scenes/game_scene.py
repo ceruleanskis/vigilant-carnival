@@ -4,15 +4,15 @@ import typing
 import pygame
 
 import components.camera
+import components.consumable
 import components.map
 import entities.creature
-import entities.player
 import entities.item
-import components.consumable
+import entities.player
 import scenes.death_scene
 import scenes.director
-import scenes.menu_scene
 import scenes.inventory_scene
+import scenes.menu_scene
 import systems.time_manager
 import utilities.constants
 import utilities.fonts
@@ -68,13 +68,9 @@ class GameScene(Scene):
             self.tile_map.generate_map()
             self.add_map_tiles_to_sprite_list()
 
-            item = entities.item.Item('medkit', ID=2)
             random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            item.x_pos = random_pos.x
-            item.y_pos = random_pos.y
-            self.all_sprites.add(item)
-            self.item_sprites.add(item)
-            self.items.append(item)
+            item = entities.item.Item('medkit', ID=2)
+            self.place_item(item, random_pos)
 
             for i in range(10):
                 creature = entities.creature.Creature('floating_eye', ID=i + 3)
@@ -103,7 +99,15 @@ class GameScene(Scene):
 
         self.block_input = False
 
+        self.update_parent()
         self.update_distance_map()
+
+    def place_item(self, item: entities.item.Item, pos: utilities.ship_generator.Coordinate):
+        item.x_pos = pos.x
+        item.y_pos = pos.y
+        self.all_sprites.add(item)
+        self.item_sprites.add(item)
+        self.items.append(item)
 
     def add_map_tiles_to_sprite_list(self):
         for y in range(self.tile_map.height):
@@ -204,7 +208,8 @@ class GameScene(Scene):
         message_log_surface = pygame.surface.Surface((utilities.constants.MESSAGE_LOG_WIDTH,
                                                       utilities.constants.MESSAGE_LOG_HEIGHT))
         message_log_surface.fill(utilities.constants.DARK_BLUE)
-        pygame.draw.rect(message_log_surface, utilities.constants.LIGHT_BLUE, message_log_surface.get_rect().inflate(-10, -10), 3)
+        pygame.draw.rect(message_log_surface, utilities.constants.LIGHT_BLUE,
+                         message_log_surface.get_rect().inflate(-10, -10), 3)
 
         for i in range(len(utilities.messages.message_log.messages)):
             message = utilities.messages.message_log.messages[i]
@@ -243,7 +248,8 @@ class GameScene(Scene):
                                                     health_display.get_width(),
                                                     health_display.get_height()])
 
-        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE, stats_display_surface.get_rect().inflate(-10, -10), 3)
+        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE,
+                         stats_display_surface.get_rect().inflate(-10, -10), 3)
 
         return stats_display_surface
 

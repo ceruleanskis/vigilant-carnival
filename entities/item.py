@@ -51,7 +51,6 @@ class Item(entities.entity.Entity):
 
     def destroy(self, consumer: entities.creature.Creature):
         if self in consumer.inventory:
-            self.consumable = None
             consumer.inventory.remove(self)
         else:
             log.warning(f"Could not remove {self.name} from inventory.")

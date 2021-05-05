@@ -75,7 +75,8 @@ class InventoryScene(Scene):
                     self.traverse_menu(utilities.helpers.Direction.UP)
 
     def update(self):
-        pass
+        if len(self.player.inventory) == 0:
+            self.should_render_action_menu = False
 
     def take_action_menu_action(self):
         if self.selected_action_menu_item == 0:  # Cancel
@@ -84,7 +85,7 @@ class InventoryScene(Scene):
             self.player.consume_item(self.player.inventory[self.selected_menu_item])
             scenes.director.pop()
         elif self.selected_action_menu_item == 2:  # Drop
-            raise NotImplementedError
+            self.player.drop_item(self.player.inventory[self.selected_menu_item])
 
     def traverse_action_menu(self, direction) -> None:
         """
