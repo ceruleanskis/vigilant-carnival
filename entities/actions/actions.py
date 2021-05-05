@@ -88,8 +88,14 @@ class TeleportAction(BaseAction):
         prev_y = self.creature.previous_y_pos
         self.creature.teleport(self.pos.x, self.pos.y)
         blocking_entity = self.creature.moved_to_blocked()
-        if blocking_entity is None or isinstance(blocking_entity, components.map.Tile):
+        if blocking_entity is None:
             return self.action_cost
+        elif isinstance(blocking_entity, components.map.Tile):
+            if blocking_entity.type == "door" and not self.creature.can_open_doors:
+                self.creature.teleport(prev_x, prev_y)
+                return self.action_cost
+            else:
+                return self.action_cost
         elif isinstance(blocking_entity, entities.creature.Creature):
             if blocking_entity.fighter_component:
                 self.creature.teleport(prev_x, prev_y)

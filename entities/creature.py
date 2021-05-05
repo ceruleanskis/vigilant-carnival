@@ -67,6 +67,7 @@ class Creature(entities.entity.Entity):
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
         self.inventory: typing.List[entities.item.Item] = []
+        self.can_open_doors = False
 
     def to_json(self):
         return {
@@ -116,8 +117,8 @@ class Creature(entities.entity.Entity):
 
         tile = self.parent_scene.tile_map.tile_map[self.x_pos][self.y_pos]
         if tile.type != 'floor' and tile.type != 'open_door':
-            if tile.type == 'door':
-                tile.type = 'open_door'
+            if tile.type == 'door' and self.can_open_doors:
+                tile.type = 'floor'
                 tile.image_str = utilities.load_data.TILE_DATA[tile.type]['image']
             else:
                 self.teleport(self.previous_x_pos, self.previous_y_pos)
