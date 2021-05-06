@@ -1,6 +1,6 @@
 import os
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 GAME_NAME = "mygame"
 DEBUG = True
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,6 +48,8 @@ GRAY = (200, 200, 200)
 WHITE = (255, 255, 255)
 
 DARK_BLUE = (16, 42, 69)
+LIGHT_BLUE = (174, 228, 237)
+LIGHT_GREEN = (100, 182, 100)
 YELLOW = (255, 255, 0)
 ORANGE = (250, 162, 0)
 LIGHT_RED = (255, 154, 143)

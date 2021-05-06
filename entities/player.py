@@ -8,6 +8,7 @@ import entities.actions.actions
 import entities.creature
 import entities.item
 import utilities.logsetup
+import utilities.ship_generator
 
 log = utilities.logsetup.log()
 
@@ -22,6 +23,7 @@ class Player(entities.creature.Creature):
         self.current_action = None
         self.fighter_component = components.component.FighterComponent(self, hp=100, strength=3)
         self.alive = True
+        self.can_open_doors = True
 
     def handle_input(self, events, pressed_keys) -> typing.Union[entities.actions.actions.BaseAction, None]:
         for event in events:
@@ -58,13 +60,33 @@ class Player(entities.creature.Creature):
                     else:
                         return None
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    self.current_action = entities.actions.actions.PickUpItemAction(self)
-                    return self.current_action
+                    item = self.moved_to_item()
+                    if item is not None and isinstance(item, entities.item.Item):
+                        self.current_action = entities.actions.actions.PickUpItemAction(self, item)
+                        return self.current_action
+                    else:
+                        return None
             else:
                 self.alive = False
 
     def move(self, direction: Tuple[int, int]):
         super(Player, self).move(direction)
+
+    def consume_item(self, item: entities.item.Item):
+        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
+            if isinstance(item.consumable, components.consumable.HealingConsumable) \
+                    and self.fighter_component.hp >= self.fighter_component.max_hp:
+                log.info("Your health is already full.")
+                return None
+            self.current_action = entities.actions.actions.ItemAction(self, item)
+        else:
+            return None
+
+    def drop_item(self, item: entities.item.Item):
+        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
+            self.parent_scene.place_item(item,
+                                         utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
+            item.destroy(self)
 
     def take_turn(self) -> int:
         cost = self.current_action.perform()

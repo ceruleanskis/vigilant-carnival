@@ -20,4 +20,4 @@ class MakeFileHandler(logging.handlers.RotatingFileHandler):
 class InGameLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         if utilities.constants.DEBUG:
-            utilities.messages.message_log.add_message(utilities.messages.Message(record.message, (100, 182, 100)))
+            utilities.messages.message_log.add_message(utilities.messages.Message(record.message, utilities.constants.LIGHT_GREEN))

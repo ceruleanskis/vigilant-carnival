@@ -23,7 +23,7 @@ font = utilities.fonts.default(12)
 
 
 class Tile(entities.entity.Entity):
-    def __init__(self, x: int, y: int, name: str):
+    def __init__(self, x: int, y: int, name: str = None):
         super(Tile, self).__init__(name)
         self.x: int = x
         self.y: int = y

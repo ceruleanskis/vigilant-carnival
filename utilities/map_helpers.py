@@ -59,21 +59,6 @@ class MapHelpers:
 
         return checked_tiles
 
-    # this is completely wrong and needs to be rewritten
-    #  1  procedure BFS(G, root) is
-    #  2      let Q be a queue
-    #  3      label root as discovered
-    #  4      Q.enqueue(root)
-    #  5      while Q is not empty do
-    #  6          v := Q.dequeue()
-    #  7          if v is the goal then
-    #  8              return v
-    #  9          for all edges from v to w in G.adjacentEdges(v) do
-    # 10              if w is not labeled as discovered then
-    # 11                  label w as discovered
-    # 12                  Q.enqueue(w)
-    # https://en.wikipedia.org/wiki/Breadth-first_search
-
     @staticmethod
     def bfs(tilemap, root, checked_tiles, unchecked_tiles):
         infinity = float('inf')

@@ -2,8 +2,16 @@
   "medkit": {
     "id": 0,
     "name": "medkit",
-    "ascii": "@",
+    "ascii": "!",
     "image": "assets/tilesets/main/items/medkit.png",
+    "type": "consumable",
+    "consumable": [
+      {
+        "type": "HealingConsumable",
+        "amount": 20
+      }
+    ],
+    "description": "This is a medkit.",
     "tileset_alpha": [
       255,
       255,

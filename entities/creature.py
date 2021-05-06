@@ -5,7 +5,6 @@ import pygame
 
 import components.map
 import entities.entity
-import entities.item
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
@@ -26,6 +25,8 @@ class Creature(entities.entity.Entity):
     def __init__(self, name: str, ID: int):
         import scenes.game_scene
         import components.component
+        import entities.item
+        import entities.actions.actions
 
         super().__init__(name)
         self.ID = ID
@@ -61,11 +62,12 @@ class Creature(entities.entity.Entity):
         self.next_move = pygame.time.get_ticks() + 500  # 100ms = 0.1s
         self.facing = Facing.left
         self.facing_changed = False
-        self.damaged = False
-        self.damage_taken = 0
+        self.health_modified = False
+        self.health_modified_amount = 0
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
         self.inventory: typing.List[entities.item.Item] = []
+        self.can_open_doors = False
 
     def to_json(self):
         return {
@@ -73,17 +75,23 @@ class Creature(entities.entity.Entity):
             'x_pos': self.x_pos,
             'y_pos': self.y_pos,
             'action_points': self.action_points,
-            'speed': self.speed
+            'speed': self.speed,
+            'id': self.ID,
+            'tileset_alpha': self.tileset_alpha,
+            'previous_x_pos': self.previous_x_pos,
+            'previous_y_pos': self.previous_y_pos
         }
 
     @staticmethod
     def from_json(json_obj: typing.Dict) -> 'Creature':
         creature_name = json_obj['name']
-        creature = Creature(creature_name)
+        creature = Creature(creature_name, json_obj['id'])
         creature.x_pos = json_obj['x_pos']
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
+        creature.previous_x_pos = json_obj['previous_x_pos']
+        creature.previous_y_pos = json_obj['previous_y_pos']
 
         try:
             creature.tileset_alpha = json_obj['tileset_alpha']
@@ -115,8 +123,8 @@ class Creature(entities.entity.Entity):
 
         tile = self.parent_scene.tile_map.tile_map[self.x_pos][self.y_pos]
         if tile.type != 'floor' and tile.type != 'open_door':
-            if tile.type == 'door':
-                tile.type = 'open_door'
+            if tile.type == 'door' and self.can_open_doors:
+                tile.type = 'floor'
                 tile.image_str = utilities.load_data.TILE_DATA[tile.type]['image']
             else:
                 self.teleport(self.previous_x_pos, self.previous_y_pos)
@@ -125,11 +133,11 @@ class Creature(entities.entity.Entity):
         return None
 
     def moved_to_item(self) -> typing.Union[None, 'Creature', components.map.Tile]:
-        for item in self.parent_scene.items:
-            if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
-                return item
-        return  None
-
+        if self.parent_scene and self.parent_scene.items:
+            for item in self.parent_scene.items:
+                if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
+                    return item
+        return None
 
     def teleport(self, x_pos, y_pos):
         self.rect.x = x_pos * utilities.constants.TILE_SIZE
@@ -144,7 +152,7 @@ class Creature(entities.entity.Entity):
             if pygame.time.get_ticks() >= self.next_move or self.facing_changed:
                 self.next_move = pygame.time.get_ticks() + 500  # animation every 0.5s = 500ms
                 self.update_facing()
-                if self.damaged:
+                if self.health_modified:
                     self.update_damage_display()
         else:
             pass
@@ -161,11 +169,17 @@ class Creature(entities.entity.Entity):
 
     def update_damage_display(self):
         self.image = self.images[self.image_num].copy()
-        self.image.fill((255, 0, 0, 255), special_flags=pygame.BLEND_MULT)
-        damage_text = font.render(str(self.damage_taken), True, utilities.constants.RED)
+
+        if self.health_modified_amount > 0:
+            color = utilities.constants.GREEN
+        else:
+            color = utilities.constants.RED
+
+        self.image.fill(color, special_flags=pygame.BLEND_MULT)
+        damage_text = font.render(str(abs(self.health_modified_amount)), True, color)
         self.image.blit(damage_text, self.image.get_rect())
-        self.damaged = False
-        self.damage_taken = 0
+        self.health_modified = False
+        self.health_modified_amount = 0
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.teleport(self.x_pos, self.y_pos)

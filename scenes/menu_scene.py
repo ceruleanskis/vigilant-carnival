@@ -122,36 +122,37 @@ class MenuScene(Scene):
         return selected_text
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
-        screen.fill(utilities.constants.BLACK)
+        if scenes.director.top() == self:
+            screen.fill(utilities.constants.BLACK)
 
-        new_game_text = self.font.render('New Game', True, utilities.constants.GREEN)
-        load_text = self.font.render('Load', True, utilities.constants.GREEN)
-        save_text = self.font.render('Save', True, utilities.constants.GREEN)
-        exit_text = self.font.render('Exit', True, utilities.constants.GREEN)
+            new_game_text = self.font.render('New Game', True, utilities.constants.GREEN)
+            load_text = self.font.render('Load', True, utilities.constants.GREEN)
+            save_text = self.font.render('Save', True, utilities.constants.GREEN)
+            exit_text = self.font.render('Exit', True, utilities.constants.GREEN)
 
-        selected_text = self.get_selected_text(new_game_text, load_text, exit_text, save_text)
+            selected_text = self.get_selected_text(new_game_text, load_text, exit_text, save_text)
 
-        rect = selected_text.get_rect()
+            rect = selected_text.get_rect()
 
-        pygame.draw.rect(selected_text, utilities.constants.BLUE, rect, 1)
+            pygame.draw.rect(selected_text, utilities.constants.BLUE, rect, 1)
 
-        screen.blit(new_game_text, (
-            GameUtils.get_text_center_width(screen, new_game_text),
-            GameUtils.get_text_center_height(screen, new_game_text)))
-        screen.blit(load_text, (
-            GameUtils.get_text_center_width(screen, load_text),
-            GameUtils.get_text_center_height(screen, load_text) + 60))
+            screen.blit(new_game_text, (
+                GameUtils.get_text_center_width(screen, new_game_text),
+                GameUtils.get_text_center_height(screen, new_game_text)))
+            screen.blit(load_text, (
+                GameUtils.get_text_center_width(screen, load_text),
+                GameUtils.get_text_center_height(screen, load_text) + 60))
 
-        if self.title:
-            screen.blit(exit_text, (
-                GameUtils.get_text_center_width(screen, exit_text),
-                GameUtils.get_text_center_height(screen, exit_text) + 120))
-        else:
-            screen.blit(exit_text, (
-                GameUtils.get_text_center_width(screen, exit_text),
-                GameUtils.get_text_center_height(screen, exit_text) + 120))
-            screen.blit(save_text, (
-                GameUtils.get_text_center_width(screen, save_text),
-                GameUtils.get_text_center_height(screen, save_text) + 180))
+            if self.title:
+                screen.blit(exit_text, (
+                    GameUtils.get_text_center_width(screen, exit_text),
+                    GameUtils.get_text_center_height(screen, exit_text) + 120))
+            else:
+                screen.blit(exit_text, (
+                    GameUtils.get_text_center_width(screen, exit_text),
+                    GameUtils.get_text_center_height(screen, exit_text) + 120))
+                screen.blit(save_text, (
+                    GameUtils.get_text_center_width(screen, save_text),
+                    GameUtils.get_text_center_height(screen, save_text) + 180))
 
-        pygame.display.update()
+            pygame.display.update()
