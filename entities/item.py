@@ -7,6 +7,7 @@ import entities.entity
 import utilities.constants
 import utilities.game_utils
 import utilities.load_data
+import utilities.logsetup
 import utilities.map_helpers
 
 log = utilities.logsetup.log()
@@ -42,6 +43,29 @@ class Item(entities.entity.Entity):
         self.parent_scene: scenes.game_scene.GameScene = None
         self.consumable = None
         self.load_consumables()
+
+    def to_json(self) -> typing.Dict:
+        return {
+            'name': self.name,
+            'x_pos': self.x_pos,
+            'y_pos': self.y_pos,
+            'id': self.ID,
+            'tileset_alpha': self.tileset_alpha
+        }
+
+    @staticmethod
+    def from_json(json_obj: typing.Dict) -> 'Item':
+        item_name = json_obj['name']
+        item = Item(item_name, json_obj['id'])
+        item.x_pos = json_obj['x_pos']
+        item.y_pos = json_obj['y_pos']
+
+        try:
+            item.tileset_alpha = json_obj['tileset_alpha']
+        except KeyError as err:
+            log.warning(f"Entity {item.name} has no tileset alpha in JSON file.")
+
+        return item
 
     def disappear(self):
         self.blocks = False

@@ -53,6 +53,7 @@ class GameScene(Scene):
             utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.background_surface = self.surface.copy()
         self.distance_map = []
+        self.tile_map = None
 
         self.background_rendered = False
         font_pixel_width = self.message_font.render("m", True, utilities.constants.BLACK).get_width()
@@ -60,33 +61,12 @@ class GameScene(Scene):
             (utilities.constants.MESSAGE_LOG_WIDTH // font_pixel_width) - font_pixel_width,
             utilities.constants.MAX_MESSAGES)
 
+        self.player = entities.player.Player()
+
         if not loaded_json:
-            width = 20
-            height = 20
-            self.tile_map = components.map.TileMap(width, height)
-
-            self.tile_map.generate_map()
-            self.add_map_tiles_to_sprite_list()
-
-            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            item = entities.item.Item('medkit', ID=2)
-            self.place_item(item, random_pos)
-
-            for i in range(10):
-                creature = entities.creature.Creature('floating_eye', ID=i + 3)
-                self.all_sprites.add(creature)
-                self.enemy_sprites.add(creature)
-                random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-                creature.x_pos = random_pos.x
-                creature.y_pos = random_pos.y
-                self.creatures.append(creature)
+            self.set_up_new_game()
         else:
             self.load(loaded_json)
-
-        self.player = entities.player.Player()
-        for i in range(4):
-            item = entities.item.Item('medkit', ID=i)
-            self.player.inventory.append(item)
 
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
@@ -101,6 +81,27 @@ class GameScene(Scene):
 
         self.update_parent()
         self.update_distance_map()
+
+    def set_up_new_game(self):
+        width = 20
+        height = 20
+        self.tile_map = components.map.TileMap(width, height)
+        self.tile_map.generate_map()
+        self.add_map_tiles_to_sprite_list()
+        random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+        item = entities.item.Item('medkit', ID=2)
+        self.place_item(item, random_pos)
+        for i in range(10):
+            creature = entities.creature.Creature('floating_eye', ID=i + 3)
+            self.all_sprites.add(creature)
+            self.enemy_sprites.add(creature)
+            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
+            creature.x_pos = random_pos.x
+            creature.y_pos = random_pos.y
+            self.creatures.append(creature)
+        for i in range(4):
+            item = entities.item.Item('medkit', ID=i)
+            self.player.inventory.append(item)
 
     def place_item(self, item: entities.item.Item, pos: utilities.ship_generator.Coordinate):
         item.x_pos = pos.x
@@ -119,6 +120,7 @@ class GameScene(Scene):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
         player_pos = json_data['player_pos']
+        self.player.inventory = [entities.item.Item.from_json(item) for item in json_data['player_inventory']]
         self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
 
         self.add_map_tiles_to_sprite_list()
@@ -127,14 +129,27 @@ class GameScene(Scene):
             for creature_data in json_data['creatures']:
                 creature = entities.creature.Creature.from_json(creature_data)
                 self.all_sprites.add(creature)
+                self.enemy_sprites.add(creature)
                 self.creatures.append(creature)
+
+        if 'items' in json_data:
+            for item_data in json_data['items']:
+                item = entities.item.Item.from_json(item_data)
+                self.all_sprites.add(item)
+                self.item_sprites.add(item)
+                self.items.append(item)
 
     def save(self):
         creatures_self_copy = self.creatures.copy()
         creatures_self_copy.remove(self.player)
+        items_self_copy = self.items.copy()
+        item_data = []
         creature_data = []
         for creature in creatures_self_copy:
             creature_data.append(creature.to_json())
+
+        for item in items_self_copy:
+            item_data.append(item.to_json())
 
         json_data = {
             'version': utilities.constants.VERSION,
@@ -142,7 +157,9 @@ class GameScene(Scene):
             'level': 1,
             'player_pos': [self.player.x_pos, self.player.y_pos],
             'creatures': creature_data,
-            'map': self.tile_map.to_json()
+            'items': item_data,
+            'map': self.tile_map.to_json(),
+            'player_inventory': [item.to_json() for item in self.player.inventory]
         }
 
         self.last_saved = utilities.save_manager.SaveManager.save_game(json_data)

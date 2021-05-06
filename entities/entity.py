@@ -6,7 +6,7 @@ import pygame
 
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, name: str):
+    def __init__(self, name: str = "None"):
         super().__init__()
         self.name = name
         self.blocks = True
@@ -18,6 +18,15 @@ class Entity(pygame.sprite.Sprite):
     @abstractmethod
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         pass
+
+    @abstractmethod
+    def to_json(self) -> typing.Dict:
+        raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def from_json(json_obj: typing.Dict) -> 'Entity':
+        raise NotImplementedError
 
 
 class EntityGroup(pygame.sprite.Group):

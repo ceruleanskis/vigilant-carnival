@@ -75,17 +75,23 @@ class Creature(entities.entity.Entity):
             'x_pos': self.x_pos,
             'y_pos': self.y_pos,
             'action_points': self.action_points,
-            'speed': self.speed
+            'speed': self.speed,
+            'id': self.ID,
+            'tileset_alpha': self.tileset_alpha,
+            'previous_x_pos': self.previous_x_pos,
+            'previous_y_pos': self.previous_y_pos
         }
 
     @staticmethod
     def from_json(json_obj: typing.Dict) -> 'Creature':
         creature_name = json_obj['name']
-        creature = Creature(creature_name)
+        creature = Creature(creature_name, json_obj['id'])
         creature.x_pos = json_obj['x_pos']
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
+        creature.previous_x_pos = json_obj['previous_x_pos']
+        creature.previous_y_pos = json_obj['previous_y_pos']
 
         try:
             creature.tileset_alpha = json_obj['tileset_alpha']
