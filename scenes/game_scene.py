@@ -199,7 +199,7 @@ class GameScene(Scene):
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
                     self.look()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
-                    self.switch_scene(scenes.inventory_scene.InventoryScene(self.player))
+                    self.switch_scene(scenes.inventory_scene.InventoryScene(self.player, self))
                     return None
 
         if not self.player.alive:

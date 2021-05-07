@@ -6,12 +6,14 @@ from typing import Union
 import pygame
 
 import components.consumable
+import components.equippable
 import entities.player
 import scenes.director
 import scenes.menu_scene
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
+import utilities.helpers
 import utilities.helpers
 import utilities.load_data
 import utilities.logsetup
@@ -24,9 +26,9 @@ class InventoryScene(Scene):
     """
     A game over screen.
     """
-
-    def __init__(self, player: entities.player.Player):
+    def __init__(self, player: entities.player.Player, game_scene):
         Scene.__init__(self)
+        self.game_scene = game_scene
         self.should_render_action_menu = False
         self.font = utilities.fonts.bold(20)
         self.image_files = {}
@@ -78,12 +80,24 @@ class InventoryScene(Scene):
         if len(self.player.inventory) == 0:
             self.should_render_action_menu = False
 
+    def update_player(self):
+        self.player = self.player.parent_scene.player
+        self.menu_items = copy.copy(self.player.inventory)
+
     def take_action_menu_action(self):
         if self.selected_action_menu_item == 0:  # Cancel
             self.should_render_action_menu = False
-        elif self.selected_action_menu_item == 1:  # Consume
-            self.player.consume_item(self.player.inventory[self.selected_menu_item])
-            scenes.director.pop()
+        elif self.selected_action_menu_item == 1:  # Consume/Equip
+            if self.action_menu_items[1] == "EQUIP":
+                self.player.equip_item(self.player.inventory[self.selected_menu_item])
+                # todo: fix. this seems hacky as a way to update the screen after equip
+                self.should_render_action_menu = False
+                self.game_scene.handle_input([], None)
+            elif self.action_menu_items[1] == "CONSUME":
+                self.player.consume_item(self.player.inventory[self.selected_menu_item])
+                scenes.director.pop()
+            else:
+                raise ValueError(f"Unknown action {self.action_menu_items[1]}")
         elif self.selected_action_menu_item == 2:  # Drop
             self.player.drop_item(self.player.inventory[self.selected_menu_item])
 
@@ -124,11 +138,10 @@ class InventoryScene(Scene):
         elif direction == utilities.helpers.Direction.RIGHT:
             if self.selected_menu_item % (self.inventory_cols - 2) == (self.inventory_cols - 3):
                 self.selected_menu_item = self.selected_menu_item - (self.inventory_cols - 3)
-                pass
             else:
                 self.selected_menu_item += 1
         elif direction == utilities.helpers.Direction.DOWN:
-            if self.selected_menu_item + self.inventory_rows - 2 >= len(self.menu_items):
+            if self.selected_menu_item + (self.inventory_rows - 2) >= self.inventory_size:
                 self.selected_menu_item = self.selected_menu_item % (self.inventory_rows - 2)
             else:
                 self.selected_menu_item += (self.inventory_cols - 2)
@@ -151,19 +164,21 @@ class InventoryScene(Scene):
         for j in range(1, self.inventory_rows - 1):
             for i in range(1, self.inventory_cols - 1):
                 # Render inventory middle images (i.e non-corners)
-                self.inventory_surface.blit(self.image_files['inventory_middle'],
-                                            (utilities.constants.TILE_SIZE * i,
-                                             utilities.constants.TILE_SIZE * j))
-
-                # Render outlines around inventory spaces
-                rect = self.inventory_surface.blit(self.image_files['inventory_middle_outline'],
+                rect = self.inventory_surface.blit(self.image_files['inventory_middle'],
                                                    (utilities.constants.TILE_SIZE * i,
                                                     utilities.constants.TILE_SIZE * j))
 
                 # Render inventory item image
                 if len(self.player.inventory) >= item_counter + 1 and self.menu_items[item_counter] is not None:
-                    self.inventory_surface.blit(self.menu_items[item_counter].image,
-                                                (utilities.constants.TILE_SIZE * i, utilities.constants.TILE_SIZE * j))
+                    self.inventory_surface.blit(self.shrink(self.menu_items[item_counter]),
+                                                ((utilities.constants.TILE_SIZE * i) + 12,
+                                                 (utilities.constants.TILE_SIZE * j) + 12))
+                    self.update_action_menu_items()
+                else:
+                    # Render outlines around inventory spaces
+                    self.inventory_surface.blit(self.image_files['inventory_middle_outline'],
+                                                (utilities.constants.TILE_SIZE * i,
+                                                 utilities.constants.TILE_SIZE * j))
 
                 # Render border around inventory image if it is selected currently
                 if self.selected_menu_item == item_counter:
@@ -173,10 +188,17 @@ class InventoryScene(Scene):
                 item_counter += 1
 
         screen.blit(self.inventory_surface,
-                    (self.inventory_surface_display_rect[0] - (utilities.constants.TILE_SIZE * 2),
+                    (self.inventory_surface_display_rect[0],
                      self.inventory_surface_display_rect[1] - (utilities.constants.TILE_SIZE * 2),
                      self.inventory_surface_display_rect[0],
                      self.inventory_surface_display_rect[1]))
+
+    @staticmethod
+    def shrink(item: entities.item.Item):
+        image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ITEM_DATA[item.key]['image'],
+                                                           item.tileset_alpha, convert_alpha=True,
+                                                           tile_size=utilities.constants.TILE_SIZE - (12 * 2))
+        return image
 
     def render(self, screen: Union[pygame.Surface, pygame.SurfaceType]):
         self.inventory_surface = pygame.surface.Surface(
@@ -184,7 +206,9 @@ class InventoryScene(Scene):
         self.inventory_surface_display_rect = utilities.game_utils.GameUtils.get_text_center(screen,
                                                                                              self.inventory_surface)
         self.load_inventory_images(screen)
+        scenes.director.prev().render(screen)
         self.render_item_description_box(screen)
+        self.render_equipment_box(screen)
         self.render_inventory_menu(screen)
         if self.should_render_action_menu:
             self.render_action_menu(screen)
@@ -216,12 +240,70 @@ class InventoryScene(Scene):
             surface.blit(self.image_files[f'{box_type}_right'], (
                 utilities.constants.TILE_SIZE * (num_cols - 1), utilities.constants.TILE_SIZE * (j + 1)))
 
-    def render_item_description_box(self, screen):
-        item_description_box_cols = 4
+    def render_equipment_box(self, screen):
+        item_description_box_cols = 5
         item_description_box_rows = self.inventory_rows
-        scenes.director.prev().render(screen)
 
-        text_surf = pygame.surface.Surface((250, utilities.constants.TILE_SIZE * item_description_box_rows))
+        text_surf = pygame.surface.Surface((item_description_box_cols * utilities.constants.TILE_SIZE,
+                                            utilities.constants.TILE_SIZE * item_description_box_rows))
+        text_surf_rect = utilities.game_utils.GameUtils.get_text_center(screen, text_surf)
+
+        self.render_box(text_surf, 'description', item_description_box_cols, item_description_box_rows)
+
+        # Render middle tiles in description box
+        for j in range(1, item_description_box_rows - 1):
+            for i in range(1, item_description_box_cols - 1):
+                text_surf.blit(self.image_files['description_middle'],
+                               (utilities.constants.TILE_SIZE * i, utilities.constants.TILE_SIZE * j))
+
+        # Head
+        text_surf.blit(self.image_files['inventory_middle_outline'],
+                       (utilities.constants.TILE_SIZE * 2,
+                        utilities.constants.TILE_SIZE))
+
+        # Weapon
+        weapon_slot_pos = (utilities.constants.TILE_SIZE * 2,
+                           utilities.constants.TILE_SIZE * 5)
+        text_surf.blit(self.image_files['inventory_middle_outline'], weapon_slot_pos)
+
+        if self.player.equipment[utilities.helpers.EquipmentSlot.WEAPON] is not None:
+            text_surf.blit(self.shrink(self.player.equipment[utilities.helpers.EquipmentSlot.WEAPON]),
+                           (weapon_slot_pos[0] + 12, weapon_slot_pos[1] + 12))
+
+        # Hands + Chest
+        for i in range(1, 4):
+            text_surf.blit(self.image_files['inventory_middle_outline'],
+                           (utilities.constants.TILE_SIZE * i,
+                            utilities.constants.TILE_SIZE * 2))
+
+        # Feet
+        for i in range(1, 3):
+            text_surf.blit(self.image_files['inventory_middle_outline'],
+                           (utilities.constants.TILE_SIZE * (i + 0.5),
+                            utilities.constants.TILE_SIZE * 3))
+
+        text = 'Armor'
+        effect_font = self.font.render(text, True, utilities.constants.GREEN)
+        text_surf.blit(effect_font,
+                       (utilities.game_utils.GameUtils.get_text_center(text_surf, effect_font)[0], 30))
+
+        text = 'Weapon'
+        effect_font = self.font.render(text, True, utilities.constants.GREEN)
+        text_surf.blit(effect_font,
+                       (utilities.game_utils.GameUtils.get_text_center(text_surf, effect_font)[0], 285))
+
+        screen.blit(text_surf, (
+            self.inventory_surface_display_rect[0] - (utilities.constants.TILE_SIZE * (self.inventory_cols - 3)),
+            self.inventory_surface_display_rect[1] - (utilities.constants.TILE_SIZE * 2),
+            text_surf_rect[0],
+            text_surf_rect[1]))
+
+    def render_item_description_box(self, screen):
+        item_description_box_cols = 5
+        item_description_box_rows = self.inventory_rows
+
+        text_surf = pygame.surface.Surface((item_description_box_cols * utilities.constants.TILE_SIZE,
+                                            utilities.constants.TILE_SIZE * item_description_box_rows))
         text_surf_rect = utilities.game_utils.GameUtils.get_text_center(screen, text_surf)
 
         if len(self.player.inventory) > self.selected_menu_item:
@@ -240,21 +322,29 @@ class InventoryScene(Scene):
             self.render_item_description_text(text_surf)
 
             screen.blit(text_surf, (
-                self.inventory_surface_display_rect[0] + (utilities.constants.TILE_SIZE * (self.inventory_cols - 2)),
+                self.inventory_surface_display_rect[0] + (utilities.constants.TILE_SIZE * (self.inventory_cols)),
                 self.inventory_surface_display_rect[1] - (utilities.constants.TILE_SIZE * 2),
                 text_surf_rect[0],
                 text_surf_rect[1]))
 
     def render_item_effect_text(self, text_surf):
-        if self.player.inventory[self.selected_menu_item].consumable and isinstance(
+        if self.player.inventory[self.selected_menu_item].consumable is not None and isinstance(
                 self.player.inventory[self.selected_menu_item].consumable,
                 components.consumable.HealingConsumable):
-            consumable: components.consumable.HealingConsumable = self.player.inventory[
+            component = self.player.inventory[
                 self.selected_menu_item].consumable
-            effect_text = f'Health +{consumable.amount}'
-            effect_font = self.font.render(effect_text, True, utilities.constants.GREEN)
-            text_surf.blit(effect_font,
-                           (utilities.game_utils.GameUtils.get_text_center(text_surf, effect_font)[0], 150))
+            effect_text = f'Health +{component.amount}'
+        elif self.player.inventory[self.selected_menu_item].equippable is not None and isinstance(
+                self.player.inventory[self.selected_menu_item].equippable,
+                components.equippable.Equippable):
+            component = self.player.inventory[
+                self.selected_menu_item].equippable
+            effect_text = f'Strength +{component.strength_modifier}'
+        else:
+            return
+        effect_font = self.font.render(effect_text, True, utilities.constants.GREEN)
+        text_surf.blit(effect_font,
+                       (utilities.game_utils.GameUtils.get_text_center(text_surf, effect_font)[0], 150))
 
     def render_item_type_text(self, text_surf):
         item_type_text = f'{self.player.inventory[self.selected_menu_item].type}'.title()
@@ -312,6 +402,13 @@ class InventoryScene(Scene):
                 self.inventory_surface_display_rect[1] + (utilities.constants.TILE_SIZE * (self.inventory_rows - 2)),
                 action_menu_surf_rect[0],
                 action_menu_surf_rect[1]))
+
+    def update_action_menu_items(self):
+        if len(self.player.inventory) > self.selected_menu_item:
+            if self.player.inventory[self.selected_menu_item].type == 'equippable':
+                self.action_menu_items[1] = "EQUIP"
+            elif self.player.inventory[self.selected_menu_item].type == 'consumable':
+                self.action_menu_items[1] = "CONSUME"
 
 
 def load_and_scale_image(filename: str, screen):
