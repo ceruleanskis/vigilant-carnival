@@ -22,13 +22,16 @@ class Facing:
 
 
 class Creature(entities.entity.Entity):
-    def __init__(self, name: str, ID: int):
+    def __init__(self, key: str, ID: int):
         import scenes.game_scene
         import components.component
         import entities.item
         import entities.actions.actions
 
-        super().__init__(name)
+        super().__init__(key)
+        self.key = key
+        self.name = utilities.load_data.ENTITY_DATA[key]['name']
+
         self.ID = ID
         self.x_pos = 1
         self.y_pos = 1
@@ -36,21 +39,21 @@ class Creature(entities.entity.Entity):
         self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
 
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
-            utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']
+            utilities.load_data.ENTITY_DATA[self.key]['tileset_alpha']
         convert_alpha = True
         if self.tileset_alpha is None:
             convert_alpha = False
 
         self.images = [
-            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][0],
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.key]['images'][0],
                                                        self.tileset_alpha, convert_alpha),
-            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][1],
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.key]['images'][1],
                                                        self.tileset_alpha, convert_alpha)
         ]
         self.image_num = 0
         self.image = self.images[self.image_num].copy()
         self.corpse_image = utilities.game_utils.GameUtils.load_sprite(
-            utilities.load_data.ENTITY_DATA[self.name]['corpse_image'])
+            utilities.load_data.ENTITY_DATA[self.key]['corpse_image'])
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
@@ -71,6 +74,7 @@ class Creature(entities.entity.Entity):
 
     def to_json(self):
         return {
+            'key': self.key,
             'name': self.name,
             'x_pos': self.x_pos,
             'y_pos': self.y_pos,
@@ -84,8 +88,8 @@ class Creature(entities.entity.Entity):
 
     @staticmethod
     def from_json(json_obj: typing.Dict) -> 'Creature':
-        creature_name = json_obj['name']
-        creature = Creature(creature_name, json_obj['id'])
+        creature_key = json_obj['key']
+        creature = Creature(creature_key, json_obj['id'])
         creature.x_pos = json_obj['x_pos']
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']

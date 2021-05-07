@@ -38,7 +38,7 @@ class FighterComponent(BaseComponent, object):
             self.die()
 
     def die(self):
-        log.info(f"{self.entity.name}_{self.entity.ID} died.")
+        log.info(f"{self.entity.name.title()}-{self.entity.ID} died.")
         self.alive = False
         self.entity.die()
 
