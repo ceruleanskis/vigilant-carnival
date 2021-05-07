@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 import pygame
 from pygame.locals import *
 
@@ -73,4 +76,14 @@ def show_fps(screen, clock, font):
 
 
 if __name__ == '__main__':
-    run_game()
+    try:
+        run_game()
+    except Exception as err:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        tb = traceback.extract_tb(exc_traceback)
+        tb_list = traceback.format_list(tb)
+        log.error(err)
+        log.error('Traceback (most recent call last):')
+        for line in tb_list:
+            log.error(line.replace('\n', ' '))
+        raise err
