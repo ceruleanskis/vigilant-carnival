@@ -82,26 +82,60 @@ class GameScene(Scene):
         self.update_parent()
         self.update_distance_map()
 
+    def get_random_unoccupied_coord_in_room(self,
+                                            room: utilities.ship_generator.Rectangle) -> utilities.ship_generator.Coordinate:
+        random_pos = self.tile_map.random_coord_in_room(room)
+        passes = 1
+
+        while self.is_tile_occupied(random_pos):
+            passes += 1
+            if passes > 10:
+                return None
+            else:
+                random_pos = self.tile_map.random_coord_in_room(room)
+        return random_pos
+
+    def is_tile_occupied(self, coord: utilities.ship_generator.Coordinate) -> bool:
+        tile: components.map.Tile = self.tile_map.tile_map[coord.x][coord.y]
+        if tile.type == 'door':
+            return True
+
+        if coord.x == self.player.x_pos and coord.y == self.player.y_pos:
+            return True
+
+        for enemy in self.enemy_sprites:
+            if coord.x == enemy.x_pos and coord.y == enemy.y_pos:
+                return True
+
+        for item in self.item_sprites:
+            if coord.x == item.x_pos and coord.y == item.y_pos:
+                return True
+
+        return False
+
     def set_up_new_game(self):
         width = 20
         height = 20
         self.tile_map = components.map.TileMap(width, height)
         self.tile_map.generate_map()
         self.add_map_tiles_to_sprite_list()
-        random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-        item = entities.item.Item('rusty_knife', ID=2)
-        self.place_item(item, random_pos)
+        random_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
+        if random_pos:
+            item = entities.item.Item('rusty_knife', ID=2)
+            self.place_item(item, random_pos)
+        else:
+            log.warning("Item placement timed out.")
         for i in range(10):
             creature = entities.creature.Creature('floating_eye', ID=i + 3)
             self.all_sprites.add(creature)
             self.enemy_sprites.add(creature)
-            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            creature.x_pos = random_pos.x
-            creature.y_pos = random_pos.y
-            self.creatures.append(creature)
-        for i in range(4):
-            item = entities.item.Item('medkit', ID=i)
-            self.player.inventory.append(item)
+            random_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
+            if random_pos:
+                creature.x_pos = random_pos.x
+                creature.y_pos = random_pos.y
+                self.creatures.append(creature)
+            else:
+                log.warning("Enemy placement timed out.")
 
     def place_item(self, item: entities.item.Item, pos: utilities.ship_generator.Coordinate):
         item.x_pos = pos.x
@@ -166,7 +200,11 @@ class GameScene(Scene):
 
     def set_player_pos(self, player_pos: utilities.ship_generator.Coordinate = None):
         if player_pos is None:
-            player_pos = self.tile_map.random_coord_in_room(self.tile_map.starting_room)
+            player_pos = self.get_random_unoccupied_coord_in_room(self.tile_map.starting_room)
+            log.warning("Player placement timed out.")
+
+        while player_pos is None:
+            player_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
 
         self.player.x_pos = player_pos.x
         self.player.y_pos = player_pos.y
