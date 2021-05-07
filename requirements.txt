@@ -16,7 +16,7 @@ MarkupSafe==1.1.1
 numpy==1.20.2
 packaging==20.9
 pygame==2.0.1
-Pygments==2.8.1
+Pygments==2.9.0
 pyinstaller==4.3
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.7
