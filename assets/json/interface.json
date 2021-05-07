@@ -1,5 +1,6 @@
 {
   "health": "assets/tilesets/main/interface/heart.png",
+  "strength": "assets/tilesets/main/interface/fist.png",
   "inventory_top_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_417.png",
   "inventory_top": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_418.png",
   "inventory_left": "assets/tilesets/main/interface/inventory/oryx_16bit_scifi_interface_419.png",

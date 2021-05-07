@@ -243,11 +243,46 @@ class GameScene(Scene):
                                                         utilities.constants.MESSAGE_LOG_HEIGHT))
         stats_display_surface.fill(utilities.constants.DARK_BLUE)
 
+        self.render_health_display(stats_display_surface)
+
+        self.render_strength_display(stats_display_surface)
+
+        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE,
+                         stats_display_surface.get_rect().inflate(-10, -10), 3)
+
+        return stats_display_surface
+
+    def render_strength_display(self, stats_display_surface, order: int = 1):
+        strength_icon_path = utilities.load_data.INTERFACE_DATA["strength"]
+        strength_icon = utilities.game_utils.GameUtils.load_sprite(strength_icon_path,
+                                                                   colorkey=utilities.constants.BLACK,
+                                                                   convert_alpha=True)
+        stats_display_surface.blit(strength_icon,
+                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
+                                    strength_icon.get_width(),
+                                    strength_icon.get_height()])
+        strength_text = "STR:"
+        strength_text_color = utilities.constants.YELLOW
+        if self.player.fighter_component:
+            strength_text = f'STR: {self.player.fighter_component.strength}'
+        self.render_stat(order, stats_display_surface, strength_icon, strength_text, strength_text_color)
+
+    def render_stat(self, order, stats_display_surface, icon, text, text_color):
+        strength_display = self.stats_display_font.render(text, True, text_color)
+        stats_display_surface.blit(strength_display,
+                                   [icon.get_width() + 20,
+                                    (icon.get_height() // 2) + (order * 5) + (
+                                            utilities.constants.TILE_SIZE * order) - 15,
+                                    strength_display.get_width(),
+                                    strength_display.get_height()])
+
+    def render_health_display(self, stats_display_surface, order: int = 0):
         health_icon_path = utilities.load_data.INTERFACE_DATA["health"]
         health_icon = utilities.game_utils.GameUtils.load_sprite(health_icon_path)
-
-        stats_display_surface.blit(health_icon, [10, 10, health_icon.get_width(), health_icon.get_height()])
-
+        stats_display_surface.blit(health_icon,
+                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
+                                    health_icon.get_width(),
+                                    health_icon.get_height()])
         health_text = 'DEAD'
         health_text_color = utilities.constants.GREEN
         if self.player.fighter_component:
@@ -258,17 +293,7 @@ class GameScene(Scene):
                 health_text_color = utilities.constants.ORANGE
             if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.2:
                 health_text_color = utilities.constants.LIGHT_RED
-
-        health_display = self.stats_display_font.render(health_text, True, health_text_color)
-
-        stats_display_surface.blit(health_display, [health_icon.get_width() + 20, (health_icon.get_height() // 2) - 15,
-                                                    health_display.get_width(),
-                                                    health_display.get_height()])
-
-        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE,
-                         stats_display_surface.get_rect().inflate(-10, -10), 3)
-
-        return stats_display_surface
+        self.render_stat(order, stats_display_surface, health_icon, health_text, health_text_color)
 
     def render_turn_display(self) -> pygame.surface.Surface:
         fps_display = self.stats_display_font.render(f'Turns: {self.time_manager.turns}', True, pygame.Color("blue"))
