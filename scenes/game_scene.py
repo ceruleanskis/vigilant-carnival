@@ -89,7 +89,7 @@ class GameScene(Scene):
         self.tile_map.generate_map()
         self.add_map_tiles_to_sprite_list()
         random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-        item = entities.item.Item('medkit', ID=2)
+        item = entities.item.Item('rusty_knife', ID=2)
         self.place_item(item, random_pos)
         for i in range(10):
             creature = entities.creature.Creature('floating_eye', ID=i + 3)

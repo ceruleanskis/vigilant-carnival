@@ -8,6 +8,7 @@ import entities.entity
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
+import utilities.helpers
 import utilities.load_data
 import utilities.logsetup
 
@@ -70,6 +71,13 @@ class Creature(entities.entity.Entity):
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
         self.inventory: typing.List[entities.item.Item] = []
+        self.equipment: typing.Dict[utilities.helpers.EquipmentSlot, typing.Union[None, entities.item.Item]] = {
+            utilities.helpers.EquipmentSlot.WEAPON: None,
+            utilities.helpers.EquipmentSlot.CHEST: None,
+            utilities.helpers.EquipmentSlot.HEAD: None,
+            utilities.helpers.EquipmentSlot.HANDS: None,
+            utilities.helpers.EquipmentSlot.FEET: None
+        }
         self.can_open_doors = False
 
     def to_json(self):

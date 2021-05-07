@@ -3,7 +3,7 @@
     "id": 0,
     "name": "medkit",
     "ascii": "!",
-    "image": "assets/tilesets/main/items/medkit.png",
+    "image": "assets/tilesets/main/items/consumables/medkit.png",
     "type": "consumable",
     "consumable": [
       {
@@ -12,6 +12,25 @@
       }
     ],
     "description": "This is a medkit.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  },
+    "rusty_knife": {
+    "id": 1,
+    "name": "rusty knife",
+    "ascii": ")",
+    "image": "assets/tilesets/main/items/equippables/knife.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "weapon",
+        "strength_modifier": 2
+      }
+    ],
+    "description": "A rusty knife.",
     "tileset_alpha": [
       255,
       255,

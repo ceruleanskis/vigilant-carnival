@@ -73,13 +73,26 @@ class Player(entities.creature.Creature):
         super(Player, self).move(direction)
 
     def consume_item(self, item: entities.item.Item):
-        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
+        if item is not None and item in self.inventory and item.consumable and isinstance(item, entities.item.Item):
             if isinstance(item.consumable, components.consumable.HealingConsumable) \
                     and self.fighter_component.hp >= self.fighter_component.max_hp:
                 log.info("Your health is already full.")
                 return None
             self.current_action = entities.actions.actions.ItemAction(self, item)
         else:
+            # raise err
+            return None
+
+    def equip_item(self, item: entities.item.Item):
+        if item is not None and item in self.inventory and item.equippable and isinstance(
+                item.equippable,
+                components.equippable.Equippable):
+            # unequip item in slot
+
+            self.equipment[item.equippable.slot] = item
+            self.current_action = entities.actions.actions.ItemAction(self, item)
+        else:
+            # raise err
             return None
 
     def drop_item(self, item: entities.item.Item):

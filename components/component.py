@@ -27,8 +27,21 @@ class FighterComponent(BaseComponent, object):
         self.strength = strength
 
     @property
+    def strength(self) -> int:
+        strength_modifier: int = sum(
+            [self.entity.equipment[item].equippable.strength_modifier for item in self.entity.equipment if
+             self.entity.equipment[item] is not None])
+        return self._strength + strength_modifier
+
+    @strength.setter
+    def strength(self, value: int) -> None:
+        self._strength = value
+
+    @property
     def hp(self) -> int:
-        return self._hp
+        hp_modifier: int = sum([self.entity.equipment[item].equippable.hp_modifier for item in self.entity.equipment if
+                                self.entity.equipment[item] is not None])
+        return self._hp + hp_modifier
 
     @hp.setter
     def hp(self, value: int) -> None:

@@ -39,7 +39,12 @@ class ItemAction(BaseAction):
     def perform(self) -> int:
         if self.item is None:
             raise Exception
-        return self.item.consumable.activate(self)
+        elif self.item.consumable:
+            return self.item.consumable.activate(self)
+        elif self.item.equippable:
+            return self.item.equippable.activate(self)
+        else:
+            raise Exception("Type is not equippable or consumable")
 
 
 class MoveAction(BaseAction):
