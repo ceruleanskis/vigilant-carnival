@@ -76,6 +76,7 @@ class Creature(entities.entity.Entity):
             utilities.helpers.EquipmentSlot.CHEST: None,
             utilities.helpers.EquipmentSlot.HEAD: None,
             utilities.helpers.EquipmentSlot.HANDS: None,
+            utilities.helpers.EquipmentSlot.LEGS: None,
             utilities.helpers.EquipmentSlot.FEET: None
         }
         self.can_open_doors = False
@@ -144,7 +145,7 @@ class Creature(entities.entity.Entity):
 
         return None
 
-    def moved_to_item(self) -> typing.Union[None, 'Creature', components.map.Tile]:
+    def moved_to_item(self) -> typing.Union[None, 'Creature', 'Item', components.map.Tile]:
         if self.parent_scene and self.parent_scene.items:
             for item in self.parent_scene.items:
                 if self.x_pos == item.x_pos and self.y_pos == item.y_pos:

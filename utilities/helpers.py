@@ -11,3 +11,4 @@ class EquipmentSlot:
     HANDS = 'hands'
     FEET = 'feet'
     HEAD = 'head'
+    LEGS = 'legs'

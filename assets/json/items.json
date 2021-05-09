@@ -112,5 +112,24 @@
       255,
       255
     ]
+  },
+  "ceramic_leggings": {
+    "id": 2,
+    "name": "ceramic leggings",
+    "ascii": "[",
+    "image": "assets/tilesets/main/items/equippables/leggings.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "legs",
+        "hp_modifier": 2
+      }
+    ],
+    "description": "Ceramic armor leggings.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
   }
 }
