@@ -257,14 +257,25 @@ class InventoryScene(Scene):
                                (utilities.constants.TILE_SIZE * i, utilities.constants.TILE_SIZE * j))
 
         # Head
-        text_surf.blit(self.image_files['inventory_middle_outline'],
+        head_rect = text_surf.blit(self.image_files['inventory_middle_outline'],
                        (utilities.constants.TILE_SIZE * 2,
                         utilities.constants.TILE_SIZE))
+
+        if self.player.equipment[utilities.helpers.EquipmentSlot.HEAD] is not None:
+            image = self.player.equipment[utilities.helpers.EquipmentSlot.HEAD]
+            text_surf.blit(self.shrink(image),
+                           (head_rect[0] + 12, head_rect[1] + 12))
 
         # Weapon
         weapon_slot_pos = (utilities.constants.TILE_SIZE * 2,
                            utilities.constants.TILE_SIZE * 5)
-        text_surf.blit(self.image_files['inventory_middle_outline'], weapon_slot_pos)
+        w_rect = text_surf.blit(self.image_files['inventory_middle_outline'], weapon_slot_pos)
+
+        if self.selected_equipment_menu_item == utilities.helpers.EquipmentSlot.WEAPON:
+            weapon_outline_rect = pygame.Rect(w_rect.left, w_rect.top, utilities.constants.TILE_SIZE,
+                                              utilities.constants.TILE_SIZE)
+            weapon_outline_rect = weapon_outline_rect.inflate(-12, -12)
+            pygame.draw.rect(text_surf, utilities.constants.RED, weapon_outline_rect, 5)
 
         if self.player.equipment[utilities.helpers.EquipmentSlot.WEAPON] is not None:
             text_surf.blit(self.shrink(self.player.equipment[utilities.helpers.EquipmentSlot.WEAPON]),
@@ -272,15 +283,41 @@ class InventoryScene(Scene):
 
         # Hands + Chest
         for i in range(1, 4):
-            text_surf.blit(self.image_files['inventory_middle_outline'],
-                           (utilities.constants.TILE_SIZE * i,
-                            utilities.constants.TILE_SIZE * 2))
+            hands_chest_rect = text_surf.blit(self.image_files['inventory_middle_outline'],
+                                              (utilities.constants.TILE_SIZE * i,
+                                               utilities.constants.TILE_SIZE * 2))
+            if self.player.equipment[utilities.helpers.EquipmentSlot.HANDS] is not None:
+                if i == 1:
+                    image = self.player.equipment[utilities.helpers.EquipmentSlot.HANDS]
+                    text_surf.blit(self.shrink(image),
+                                   (hands_chest_rect[0] + 12, hands_chest_rect[1] + 12))
+                if i == 3:
+                    image = self.player.equipment[utilities.helpers.EquipmentSlot.HANDS]
+                    image = pygame.transform.flip(self.shrink(image), True, False)
+                    text_surf.blit(image,
+                                   (hands_chest_rect[0] + 12, hands_chest_rect[1] + 12))
+
+            if self.player.equipment[utilities.helpers.EquipmentSlot.CHEST] is not None:
+                if i == 2:
+                    image = self.player.equipment[utilities.helpers.EquipmentSlot.CHEST]
+                    text_surf.blit(self.shrink(image),
+                                   (hands_chest_rect[0] + 12, hands_chest_rect[1] + 12))
 
         # Feet
         for i in range(1, 3):
-            text_surf.blit(self.image_files['inventory_middle_outline'],
+            feet_rect = text_surf.blit(self.image_files['inventory_middle_outline'],
                            (utilities.constants.TILE_SIZE * (i + 0.5),
                             utilities.constants.TILE_SIZE * 3))
+            if self.player.equipment[utilities.helpers.EquipmentSlot.FEET] is not None:
+                if i == 1:
+                    image = self.player.equipment[utilities.helpers.EquipmentSlot.FEET]
+                    text_surf.blit(self.shrink(image),
+                                   (feet_rect[0] + 12, feet_rect[1] + 12))
+                if i == 2:
+                    image = self.player.equipment[utilities.helpers.EquipmentSlot.FEET]
+                    image = pygame.transform.flip(self.shrink(image), True, False)
+                    text_surf.blit(image,
+                                   (feet_rect[0] + 12, feet_rect[1] + 12))
 
         text = 'Armor'
         effect_font = self.font.render(text, True, utilities.constants.GREEN)

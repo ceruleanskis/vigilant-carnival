@@ -123,6 +123,14 @@ class GameScene(Scene):
         if random_pos:
             item = entities.item.Item('rusty_knife', ID=2)
             self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_boots', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_gloves', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_chest', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_helmet', ID=2)
+            self.place_item(item, random_pos)
         else:
             log.warning("Item placement timed out.")
         for i in range(10):

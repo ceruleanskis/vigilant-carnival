@@ -18,7 +18,7 @@
       255
     ]
   },
-    "rusty_knife": {
+  "rusty_knife": {
     "id": 1,
     "name": "rusty knife",
     "ascii": ")",
@@ -31,6 +31,82 @@
       }
     ],
     "description": "A rusty knife.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  },
+  "ceramic_chest": {
+    "id": 2,
+    "name": "ceramic chest",
+    "ascii": "[",
+    "image": "assets/tilesets/main/items/equippables/chest.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "chest",
+        "hp_modifier": 2
+      }
+    ],
+    "description": "Ceramic armor plate.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  },
+  "ceramic_gloves": {
+    "id": 2,
+    "name": "ceramic gloves",
+    "ascii": "[",
+    "image": "assets/tilesets/main/items/equippables/gloves.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "hands",
+        "hp_modifier": 2
+      }
+    ],
+    "description": "Ceramic armor gloves.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  },
+  "ceramic_boots": {
+    "id": 2,
+    "name": "ceramic boots",
+    "ascii": "[",
+    "image": "assets/tilesets/main/items/equippables/boots.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "feet",
+        "hp_modifier": 2
+      }
+    ],
+    "description": "Ceramic armor boots.",
+    "tileset_alpha": [
+      255,
+      255,
+      255
+    ]
+  },
+  "ceramic_helmet": {
+    "id": 2,
+    "name": "ceramic helmet",
+    "ascii": "[",
+    "image": "assets/tilesets/main/items/equippables/helmet.png",
+    "type": "equippable",
+    "equippable": [
+      {
+        "slot": "head",
+        "hp_modifier": 2
+      }
+    ],
+    "description": "Ceramic armor helmet.",
     "tileset_alpha": [
       255,
       255,
