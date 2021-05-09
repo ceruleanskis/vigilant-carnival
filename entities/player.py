@@ -87,8 +87,6 @@ class Player(entities.creature.Creature):
         if item is not None and item in self.inventory and item.equippable and isinstance(
                 item.equippable,
                 components.equippable.Equippable):
-            # unequip item in slot
-
             self.equipment[item.equippable.slot] = item
             self.current_action = entities.actions.actions.ItemAction(self, item)
         else:
@@ -105,3 +103,12 @@ class Player(entities.creature.Creature):
         cost = self.current_action.perform()
         self.current_action = None
         return cost
+
+    def unequip_item(self, item: entities.item.Item):
+        if item is not None and item.equippable and isinstance(item.equippable,components.equippable.Equippable):
+            self.equipment[item.equippable.slot] = None
+            self.inventory.append(item)
+            self.current_action = entities.actions.actions.ItemAction(self, item)
+        else:
+            # raise err
+            return None

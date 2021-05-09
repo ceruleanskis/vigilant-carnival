@@ -24,8 +24,14 @@ class Equippable(components.component.BaseComponent):
 
     def activate(self, action: entities.actions.actions.ItemAction) -> int:
         action_cost = 100
-        equipper = action.creature
 
-        self.entity.destroy(equipper)
-        log.info(f"You equip the {self.entity.name}.")
+        if action.creature.equipment[self.slot] is None:
+            log.info(f"You unequip the {self.entity.name}.")
+        elif action.creature.equipment[self.slot] == action.item:
+            equipper = action.creature
+            self.entity.destroy(equipper)
+            log.info(f"You equip the {self.entity.name}.")
+
+        else:
+            raise RuntimeError(f"Cannot take item action. {self.entity.name}, equip/unequip action.")
         return action_cost

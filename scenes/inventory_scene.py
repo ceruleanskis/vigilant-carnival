@@ -65,6 +65,9 @@ class InventoryScene(Scene):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if self.should_render_action_menu:
                     self.take_action_menu_action()
+                elif self.should_traverse_equipment_menu:
+                    if self.player.equipment[self.selected_equipment_menu_item] is not None:
+                        self.should_render_action_menu = True
                 elif len(self.player.inventory) > self.selected_menu_item:
                     self.should_render_action_menu = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
@@ -96,7 +99,7 @@ class InventoryScene(Scene):
 
     def update(self):
         self.update_player()
-        if len(self.player.inventory) == 0:
+        if len(self.player.inventory) == 0 and self.should_traverse_equipment_menu is False:
             self.should_render_action_menu = False
 
     def update_player(self):
@@ -108,10 +111,15 @@ class InventoryScene(Scene):
     def take_action_menu_action(self):
         if self.selected_action_menu_item == 0:  # Cancel
             self.should_render_action_menu = False
-        elif self.selected_action_menu_item == 1:  # Consume/Equip
+        elif self.selected_action_menu_item == 1:  # Consume/Equip/Unequip
             if self.action_menu_items[1] == "EQUIP":
                 self.player.equip_item(self.player.inventory[self.selected_menu_item])
                 # todo: fix. this seems hacky as a way to update the screen after equip
+                self.should_render_action_menu = False
+                self.game_scene.handle_input([], None)
+                self.update()
+            elif self.action_menu_items[1] == "UNEQUIP":
+                self.player.unequip_item(self.player.equipment[self.selected_equipment_menu_item])
                 self.should_render_action_menu = False
                 self.game_scene.handle_input([], None)
                 self.update()
@@ -225,7 +233,6 @@ class InventoryScene(Scene):
                     self.inventory_surface.blit(self.shrink(self.menu_items[item_counter]),
                                                 ((utilities.constants.TILE_SIZE * i) + 12,
                                                  (utilities.constants.TILE_SIZE * j) + 12))
-                    self.update_action_menu_items()
                 else:
                     # Render outlines around inventory spaces
                     self.inventory_surface.blit(self.image_files['inventory_middle_outline'],
@@ -265,6 +272,7 @@ class InventoryScene(Scene):
             self.render_item_description_box(screen)
         self.render_equipment_box(screen)
         self.render_inventory_menu(screen)
+        self.update_action_menu_items()
         if self.should_render_action_menu:
             self.render_action_menu(screen)
 
@@ -491,11 +499,15 @@ class InventoryScene(Scene):
                 action_menu_surf_rect[1]))
 
     def update_action_menu_items(self):
-        if len(self.player.inventory) > self.selected_menu_item:
-            if self.player.inventory[self.selected_menu_item].type == 'equippable':
-                self.action_menu_items[1] = "EQUIP"
-            elif self.player.inventory[self.selected_menu_item].type == 'consumable':
-                self.action_menu_items[1] = "CONSUME"
+        if self.should_traverse_equipment_menu:
+            if self.player.equipment[self.selected_equipment_menu_item] is not None:
+                self.action_menu_items[1] = "UNEQUIP"
+        else:
+            if len(self.player.inventory) > self.selected_menu_item:
+                if self.player.inventory[self.selected_menu_item].type == 'equippable':
+                    self.action_menu_items[1] = "EQUIP"
+                elif self.player.inventory[self.selected_menu_item].type == 'consumable':
+                    self.action_menu_items[1] = "CONSUME"
 
 
 def load_and_scale_image(filename: str, screen):
