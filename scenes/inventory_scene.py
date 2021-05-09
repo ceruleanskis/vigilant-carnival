@@ -95,12 +95,15 @@ class InventoryScene(Scene):
                         self.traverse_menu(utilities.helpers.Direction.UP)
 
     def update(self):
+        self.update_player()
         if len(self.player.inventory) == 0:
             self.should_render_action_menu = False
 
     def update_player(self):
         self.player = self.player.parent_scene.player
         self.menu_items = copy.copy(self.player.inventory)
+        while len(self.menu_items) < self.inventory_size:
+            self.menu_items.append(None)
 
     def take_action_menu_action(self):
         if self.selected_action_menu_item == 0:  # Cancel
@@ -111,6 +114,7 @@ class InventoryScene(Scene):
                 # todo: fix. this seems hacky as a way to update the screen after equip
                 self.should_render_action_menu = False
                 self.game_scene.handle_input([], None)
+                self.update()
             elif self.action_menu_items[1] == "CONSUME":
                 self.player.consume_item(self.player.inventory[self.selected_menu_item])
                 scenes.director.pop()

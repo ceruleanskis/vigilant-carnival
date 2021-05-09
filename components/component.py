@@ -38,10 +38,18 @@ class FighterComponent(BaseComponent, object):
         self._strength = value
 
     @property
-    def hp(self) -> int:
+    def max_hp(self) -> int:
         hp_modifier: int = sum([self.entity.equipment[item].equippable.hp_modifier for item in self.entity.equipment if
                                 self.entity.equipment[item] is not None])
-        return self._hp + hp_modifier
+        return self._max_hp + hp_modifier
+
+    @max_hp.setter
+    def max_hp(self, value: int) -> None:
+        self._max_hp = value
+
+    @property
+    def hp(self) -> int:
+        return self._hp
 
     @hp.setter
     def hp(self, value: int) -> None:

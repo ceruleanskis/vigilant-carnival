@@ -43,6 +43,7 @@ class GameScene(Scene):
         self.enemy_sprites = pygame.sprite.Group()
         self.item_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
+        self.loaded_player_hp = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.creatures: typing.List[entities.creature.Creature] = []
@@ -70,6 +71,10 @@ class GameScene(Scene):
 
         self.all_sprites.add(self.player)
         self.set_player_pos(self.loaded_player_pos)
+        if self.loaded_player_hp is None:
+            self.player.fighter_component.hp = self.player.fighter_component.max_hp
+        else:
+            self.player.fighter_component.hp = self.loaded_player_hp
         self.creatures.append(self.player)
         self.time_manager.register(self.player)
 
@@ -131,6 +136,8 @@ class GameScene(Scene):
             self.place_item(item, random_pos)
             item = entities.item.Item('ceramic_helmet', ID=2)
             self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_leggings', ID=2)
+            self.place_item(item, random_pos)
         else:
             log.warning("Item placement timed out.")
         for i in range(10):
@@ -162,8 +169,10 @@ class GameScene(Scene):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
         player_pos = json_data['player_pos']
+        player_hp = json_data['player_hp']
         self.player.inventory = [entities.item.Item.from_json(item) for item in json_data['player_inventory']]
         self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
+        self.loaded_player_hp = player_hp
 
         self.add_map_tiles_to_sprite_list()
 
@@ -201,7 +210,8 @@ class GameScene(Scene):
             'creatures': creature_data,
             'items': item_data,
             'map': self.tile_map.to_json(),
-            'player_inventory': [item.to_json() for item in self.player.inventory]
+            'player_inventory': [item.to_json() for item in self.player.inventory],
+            'player_hp': self.player.fighter_component.hp
         }
 
         self.last_saved = utilities.save_manager.SaveManager.save_game(json_data)

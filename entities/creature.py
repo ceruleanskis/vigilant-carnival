@@ -37,8 +37,6 @@ class Creature(entities.entity.Entity):
         self.x_pos = 1
         self.y_pos = 1
 
-        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
-
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
             utilities.load_data.ENTITY_DATA[self.key]['tileset_alpha']
         convert_alpha = True
@@ -79,6 +77,7 @@ class Creature(entities.entity.Entity):
             utilities.helpers.EquipmentSlot.LEGS: None,
             utilities.helpers.EquipmentSlot.FEET: None
         }
+        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
         self.can_open_doors = False
 
     def to_json(self):
