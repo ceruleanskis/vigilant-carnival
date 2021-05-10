@@ -19,5 +19,17 @@ class MakeFileHandler(logging.handlers.RotatingFileHandler):
 
 class InGameLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
-        if utilities.constants.DEBUG:
+        if record.levelname == 'INFO':
             utilities.messages.message_log.add_message(utilities.messages.Message(record.message, utilities.constants.LIGHT_GREEN))
+        if record.levelname != 'INFO' and utilities.constants.DEBUG:
+            color = utilities.constants.WHITE
+            if record.levelname == 'DEBUG':
+                color = utilities.constants.GREEN
+            elif record.levelname == 'ERROR':
+                color = utilities.constants.RED
+            elif record.levelname == 'CRITICAL':
+                color = utilities.constants.ORANGE
+            elif record.levelname == 'WARNING':
+                color = utilities.constants.YELLOW
+
+            utilities.messages.message_log.add_message(utilities.messages.Message(record.message, color))

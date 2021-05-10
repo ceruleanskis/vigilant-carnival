@@ -16,7 +16,7 @@
   },
   "floating_eye": {
     "id": 1,
-    "name": "floating_eye",
+    "name": "floating eye",
     "ascii": "e",
     "images": [
       "assets/tilesets/main/entities/floating_eye/eye_0.png",

@@ -36,7 +36,3 @@ class HealingConsumable(Consumable):
             log.info(f"You consume the {self.entity.name}, and recover {amount_recovered} HP!")
             self.entity.destroy(consumer)
             return action_cost
-        else:
-            # raise Impossible(f"Your health is already full.")
-            log.info(f"Your health is already full.")
-            return 0

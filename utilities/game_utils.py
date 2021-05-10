@@ -51,7 +51,7 @@ class GameUtils:
 
     @staticmethod
     def load_sprite(path_from_root: Union[str, IO], colorkey: Tuple = None,
-                    convert_alpha: bool = None) -> pygame.Surface:
+                    convert_alpha: bool = None, tile_size: int = utilities.constants.TILE_SIZE) -> pygame.Surface:
         full_path = f'{utilities.constants.ROOT_DIR}/{path_from_root}'
         try:
             image: pygame.Surface = pygame.image.load(full_path)
@@ -59,7 +59,7 @@ class GameUtils:
                 image = image.convert_alpha()
             if colorkey:
                 image.set_colorkey(colorkey)
-            image = pygame.transform.scale(image, (utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))
+            image = pygame.transform.scale(image, (tile_size, tile_size))
             return image
         except FileNotFoundError as err:
             log.error(f'ERROR: {full_path} does not exist.')

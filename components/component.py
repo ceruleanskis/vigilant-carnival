@@ -27,6 +27,27 @@ class FighterComponent(BaseComponent, object):
         self.strength = strength
 
     @property
+    def strength(self) -> int:
+        strength_modifier: int = sum(
+            [self.entity.equipment[item].equippable.strength_modifier for item in self.entity.equipment if
+             self.entity.equipment[item] is not None])
+        return self._strength + strength_modifier
+
+    @strength.setter
+    def strength(self, value: int) -> None:
+        self._strength = value
+
+    @property
+    def max_hp(self) -> int:
+        hp_modifier: int = sum([self.entity.equipment[item].equippable.hp_modifier for item in self.entity.equipment if
+                                self.entity.equipment[item] is not None])
+        return self._max_hp + hp_modifier
+
+    @max_hp.setter
+    def max_hp(self, value: int) -> None:
+        self._max_hp = value
+
+    @property
     def hp(self) -> int:
         return self._hp
 
@@ -38,7 +59,7 @@ class FighterComponent(BaseComponent, object):
             self.die()
 
     def die(self):
-        log.info(f"{self.entity.name}_{self.entity.ID} died.")
+        log.info(f"{self.entity.name.title()}-{self.entity.ID} died.")
         self.alive = False
         self.entity.die()
 

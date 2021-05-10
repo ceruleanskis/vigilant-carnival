@@ -43,6 +43,7 @@ class GameScene(Scene):
         self.enemy_sprites = pygame.sprite.Group()
         self.item_sprites = pygame.sprite.Group()
         self.loaded_player_pos = None
+        self.loaded_player_hp = None
         self.last_saved = None
         self.surface = pygame.surface.Surface((utilities.constants.DISPLAY_WIDTH, utilities.constants.DISPLAY_HEIGHT))
         self.creatures: typing.List[entities.creature.Creature] = []
@@ -65,11 +66,11 @@ class GameScene(Scene):
 
         if not loaded_json:
             self.set_up_new_game()
+            self.set_player_pos(None)
         else:
             self.load(loaded_json)
 
         self.all_sprites.add(self.player)
-        self.set_player_pos(self.loaded_player_pos)
         self.creatures.append(self.player)
         self.time_manager.register(self.player)
 
@@ -82,26 +83,70 @@ class GameScene(Scene):
         self.update_parent()
         self.update_distance_map()
 
+    def get_random_unoccupied_coord_in_room(self,
+                                            room: utilities.ship_generator.Rectangle) -> utilities.ship_generator.Coordinate:
+        random_pos = self.tile_map.random_coord_in_room(room)
+        passes = 1
+
+        while self.is_tile_occupied(random_pos):
+            passes += 1
+            if passes > 10:
+                return None
+            else:
+                random_pos = self.tile_map.random_coord_in_room(room)
+        return random_pos
+
+    def is_tile_occupied(self, coord: utilities.ship_generator.Coordinate) -> bool:
+        tile: components.map.Tile = self.tile_map.tile_map[coord.x][coord.y]
+        if tile.type == 'door':
+            return True
+
+        if coord.x == self.player.x_pos and coord.y == self.player.y_pos:
+            return True
+
+        for enemy in self.enemy_sprites:
+            if coord.x == enemy.x_pos and coord.y == enemy.y_pos:
+                return True
+
+        for item in self.item_sprites:
+            if coord.x == item.x_pos and coord.y == item.y_pos:
+                return True
+
+        return False
+
     def set_up_new_game(self):
         width = 20
         height = 20
         self.tile_map = components.map.TileMap(width, height)
         self.tile_map.generate_map()
         self.add_map_tiles_to_sprite_list()
-        random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-        item = entities.item.Item('medkit', ID=2)
-        self.place_item(item, random_pos)
+        random_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
+        if random_pos:
+            item = entities.item.Item('rusty_knife', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_boots', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_gloves', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_chest', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_helmet', ID=2)
+            self.place_item(item, random_pos)
+            item = entities.item.Item('ceramic_leggings', ID=2)
+            self.place_item(item, random_pos)
+        else:
+            log.warning("Item placement timed out.")
         for i in range(10):
             creature = entities.creature.Creature('floating_eye', ID=i + 3)
             self.all_sprites.add(creature)
             self.enemy_sprites.add(creature)
-            random_pos = self.tile_map.random_coord_in_room(random.choice(self.tile_map.room_list))
-            creature.x_pos = random_pos.x
-            creature.y_pos = random_pos.y
-            self.creatures.append(creature)
-        for i in range(4):
-            item = entities.item.Item('medkit', ID=i)
-            self.player.inventory.append(item)
+            random_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
+            if random_pos:
+                creature.x_pos = random_pos.x
+                creature.y_pos = random_pos.y
+                self.creatures.append(creature)
+            else:
+                log.warning("Enemy placement timed out.")
 
     def place_item(self, item: entities.item.Item, pos: utilities.ship_generator.Coordinate):
         item.x_pos = pos.x
@@ -119,10 +164,8 @@ class GameScene(Scene):
     def load(self, json_data):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
-        player_pos = json_data['player_pos']
-        self.player.inventory = [entities.item.Item.from_json(item) for item in json_data['player_inventory']]
-        self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
-
+        self.player = entities.player.Player.from_json(json_data['player'], creature_type='Player')
+        self.set_player_pos(utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
         self.add_map_tiles_to_sprite_list()
 
         if 'creatures' in json_data:
@@ -155,18 +198,21 @@ class GameScene(Scene):
             'version': utilities.constants.VERSION,
             'seed': utilities.seed.seed.hex,
             'level': 1,
-            'player_pos': [self.player.x_pos, self.player.y_pos],
+            'player': self.player.to_json(),
             'creatures': creature_data,
             'items': item_data,
-            'map': self.tile_map.to_json(),
-            'player_inventory': [item.to_json() for item in self.player.inventory]
+            'map': self.tile_map.to_json()
         }
 
         self.last_saved = utilities.save_manager.SaveManager.save_game(json_data)
 
     def set_player_pos(self, player_pos: utilities.ship_generator.Coordinate = None):
         if player_pos is None:
-            player_pos = self.tile_map.random_coord_in_room(self.tile_map.starting_room)
+            player_pos = self.get_random_unoccupied_coord_in_room(self.tile_map.starting_room)
+            log.warning("Player placement timed out.")
+
+        while player_pos is None:
+            player_pos = self.get_random_unoccupied_coord_in_room(random.choice(self.tile_map.room_list))
 
         self.player.x_pos = player_pos.x
         self.player.y_pos = player_pos.y
@@ -199,7 +245,7 @@ class GameScene(Scene):
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_l:
                     self.look()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_i:
-                    self.switch_scene(scenes.inventory_scene.InventoryScene(self.player))
+                    self.switch_scene(scenes.inventory_scene.InventoryScene(self.player, self))
                     return None
 
         if not self.player.alive:
@@ -243,11 +289,46 @@ class GameScene(Scene):
                                                         utilities.constants.MESSAGE_LOG_HEIGHT))
         stats_display_surface.fill(utilities.constants.DARK_BLUE)
 
+        self.render_health_display(stats_display_surface)
+
+        self.render_strength_display(stats_display_surface)
+
+        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE,
+                         stats_display_surface.get_rect().inflate(-10, -10), 3)
+
+        return stats_display_surface
+
+    def render_strength_display(self, stats_display_surface, order: int = 1):
+        strength_icon_path = utilities.load_data.INTERFACE_DATA["strength"]
+        strength_icon = utilities.game_utils.GameUtils.load_sprite(strength_icon_path,
+                                                                   colorkey=utilities.constants.BLACK,
+                                                                   convert_alpha=True)
+        stats_display_surface.blit(strength_icon,
+                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
+                                    strength_icon.get_width(),
+                                    strength_icon.get_height()])
+        strength_text = "STR:"
+        strength_text_color = utilities.constants.YELLOW
+        if self.player.fighter_component:
+            strength_text = f'STR: {self.player.fighter_component.strength}'
+        self.render_stat(order, stats_display_surface, strength_icon, strength_text, strength_text_color)
+
+    def render_stat(self, order, stats_display_surface, icon, text, text_color):
+        strength_display = self.stats_display_font.render(text, True, text_color)
+        stats_display_surface.blit(strength_display,
+                                   [icon.get_width() + 20,
+                                    (icon.get_height() // 2) + (order * 5) + (
+                                            utilities.constants.TILE_SIZE * order) - 15,
+                                    strength_display.get_width(),
+                                    strength_display.get_height()])
+
+    def render_health_display(self, stats_display_surface, order: int = 0):
         health_icon_path = utilities.load_data.INTERFACE_DATA["health"]
         health_icon = utilities.game_utils.GameUtils.load_sprite(health_icon_path)
-
-        stats_display_surface.blit(health_icon, [10, 10, health_icon.get_width(), health_icon.get_height()])
-
+        stats_display_surface.blit(health_icon,
+                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
+                                    health_icon.get_width(),
+                                    health_icon.get_height()])
         health_text = 'DEAD'
         health_text_color = utilities.constants.GREEN
         if self.player.fighter_component:
@@ -258,17 +339,7 @@ class GameScene(Scene):
                 health_text_color = utilities.constants.ORANGE
             if self.player.fighter_component.hp <= self.player.fighter_component.max_hp * 0.2:
                 health_text_color = utilities.constants.LIGHT_RED
-
-        health_display = self.stats_display_font.render(health_text, True, health_text_color)
-
-        stats_display_surface.blit(health_display, [health_icon.get_width() + 20, (health_icon.get_height() // 2) - 15,
-                                                    health_display.get_width(),
-                                                    health_display.get_height()])
-
-        pygame.draw.rect(stats_display_surface, utilities.constants.LIGHT_BLUE,
-                         stats_display_surface.get_rect().inflate(-10, -10), 3)
-
-        return stats_display_surface
+        self.render_stat(order, stats_display_surface, health_icon, health_text, health_text_color)
 
     def render_turn_display(self) -> pygame.surface.Surface:
         fps_display = self.stats_display_font.render(f'Turns: {self.time_manager.turns}', True, pygame.Color("blue"))

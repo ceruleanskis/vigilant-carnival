@@ -8,6 +8,7 @@ import entities.entity
 import utilities.constants
 import utilities.fonts
 import utilities.game_utils
+import utilities.helpers
 import utilities.load_data
 import utilities.logsetup
 
@@ -22,35 +23,36 @@ class Facing:
 
 
 class Creature(entities.entity.Entity):
-    def __init__(self, name: str, ID: int):
+    def __init__(self, key: str, ID: int):
         import scenes.game_scene
         import components.component
         import entities.item
         import entities.actions.actions
 
-        super().__init__(name)
+        super().__init__(key)
+        self.key = key
+        self.name = utilities.load_data.ENTITY_DATA[key]['name']
+
         self.ID = ID
         self.x_pos = 1
         self.y_pos = 1
 
-        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
-
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
-            utilities.load_data.ENTITY_DATA[self.name]['tileset_alpha']
+            utilities.load_data.ENTITY_DATA[self.key]['tileset_alpha']
         convert_alpha = True
         if self.tileset_alpha is None:
             convert_alpha = False
 
         self.images = [
-            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][0],
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.key]['images'][0],
                                                        self.tileset_alpha, convert_alpha),
-            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.name]['images'][1],
+            utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ENTITY_DATA[self.key]['images'][1],
                                                        self.tileset_alpha, convert_alpha)
         ]
         self.image_num = 0
         self.image = self.images[self.image_num].copy()
         self.corpse_image = utilities.game_utils.GameUtils.load_sprite(
-            utilities.load_data.ENTITY_DATA[self.name]['corpse_image'])
+            utilities.load_data.ENTITY_DATA[self.key]['corpse_image'])
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
@@ -67,10 +69,20 @@ class Creature(entities.entity.Entity):
         self.did_set_corpse_image = False
         self.current_action = entities.actions.actions.ChasePlayerAction(self)
         self.inventory: typing.List[entities.item.Item] = []
+        self.equipment: typing.Dict[utilities.helpers.EquipmentSlot, typing.Union[None, entities.item.Item]] = {
+            utilities.helpers.EquipmentSlot.WEAPON: None,
+            utilities.helpers.EquipmentSlot.CHEST: None,
+            utilities.helpers.EquipmentSlot.HEAD: None,
+            utilities.helpers.EquipmentSlot.HANDS: None,
+            utilities.helpers.EquipmentSlot.LEGS: None,
+            utilities.helpers.EquipmentSlot.FEET: None
+        }
+        self.fighter_component = components.component.FighterComponent(self, hp=5, strength=2)
         self.can_open_doors = False
 
     def to_json(self):
         return {
+            'key': self.key,
             'name': self.name,
             'x_pos': self.x_pos,
             'y_pos': self.y_pos,
@@ -79,19 +91,35 @@ class Creature(entities.entity.Entity):
             'id': self.ID,
             'tileset_alpha': self.tileset_alpha,
             'previous_x_pos': self.previous_x_pos,
-            'previous_y_pos': self.previous_y_pos
+            'previous_y_pos': self.previous_y_pos,
+            'hp': self.fighter_component.hp,
+            'inventory': [item.to_json() for item in self.inventory],
+            'equipment': {key: (self.equipment[key].to_json() if self.equipment[key] is not None else None) for key in
+                          self.equipment}
         }
 
     @staticmethod
-    def from_json(json_obj: typing.Dict) -> 'Creature':
-        creature_name = json_obj['name']
-        creature = Creature(creature_name, json_obj['id'])
+    def from_json(json_obj: typing.Dict, creature_type: str = 'Creature') -> typing.Union['Creature', 'Player']:
+        import entities.player
+        creature_key = json_obj['key']
+        if creature_type == 'Creature':
+            creature = Creature(creature_key, json_obj['id'])
+        elif creature_type == 'Player':
+            creature = entities.player.Player()
+        else:
+            raise ValueError(f'Cannot use method from_json() with creature_type given ({creature_type})')
         creature.x_pos = json_obj['x_pos']
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
         creature.previous_x_pos = json_obj['previous_x_pos']
         creature.previous_y_pos = json_obj['previous_y_pos']
+        creature.fighter_component.hp = json_obj['hp']
+        creature.inventory = [entities.item.Item.from_json(item) for item in json_obj['inventory']]
+        equipment = [json_obj['equipment'][item] for item in json_obj['equipment']]
+        for item in [item for item in equipment if item is not None]:
+            item_obj = entities.item.Item.from_json(item)
+            creature = Creature.equip_from_json(creature, item_obj)
 
         try:
             creature.tileset_alpha = json_obj['tileset_alpha']
@@ -132,7 +160,7 @@ class Creature(entities.entity.Entity):
 
         return None
 
-    def moved_to_item(self) -> typing.Union[None, 'Creature', components.map.Tile]:
+    def moved_to_item(self) -> typing.Union[None, 'Creature', 'Item', components.map.Tile]:
         if self.parent_scene and self.parent_scene.items:
             for item in self.parent_scene.items:
                 if self.x_pos == item.x_pos and self.y_pos == item.y_pos:
@@ -195,3 +223,12 @@ class Creature(entities.entity.Entity):
         self.fighter_component = None
         self.blocks = False
         self.current_action = None
+
+    @staticmethod
+    def equip_from_json(creature: 'Creature', item: 'entities.item.Item'):
+        if item is not None and item.equippable and isinstance(
+                item.equippable,
+                components.equippable.Equippable):
+            creature.equipment[item.equippable.slot] = item
+
+        return creature

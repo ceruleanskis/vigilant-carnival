@@ -23,8 +23,8 @@ font = utilities.fonts.default(12)
 
 
 class Tile(entities.entity.Entity):
-    def __init__(self, x: int, y: int, name: str = None):
-        super(Tile, self).__init__(name)
+    def __init__(self, x: int, y: int, key: str = None):
+        super(Tile, self).__init__(key)
         self.x: int = x
         self.y: int = y
         self.image = pygame.Surface((utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE))

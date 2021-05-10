@@ -1,6 +1,6 @@
 import logging.config
 import os
-
+import utilities.constants
 
 # DEBUG - Detailed information, typically of interest only when diagnosing problems.
 # INFO - Confirmation that things are working as expected.
@@ -16,7 +16,8 @@ def log() -> logging.Logger:
     :return: Returns the logger.
     :rtype: Logger
     """
-    log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../logutil.conf')
+    _dir = utilities.constants.ROOT_DIR
+    log_file_path = os.path.join(_dir, 'logutil.conf')
     logging.config.fileConfig(log_file_path, disable_existing_loggers=False)
     logger = logging.getLogger()
     return logger

@@ -33,6 +33,7 @@ class MenuScene(Scene):
     def __init__(self, title: bool = True):
         Scene.__init__(self)
         self.font = utilities.fonts.default(48)
+        self.version_font = utilities.fonts.default(24)
         self.title = title
         if self.title:
             self.menu_items = [0, 1, 2]
@@ -129,6 +130,7 @@ class MenuScene(Scene):
             load_text = self.font.render('Load', True, utilities.constants.GREEN)
             save_text = self.font.render('Save', True, utilities.constants.GREEN)
             exit_text = self.font.render('Exit', True, utilities.constants.GREEN)
+            version_text = self.version_font.render(f'v{utilities.constants.VERSION}', True, utilities.constants.LIGHT_BLUE)
 
             selected_text = self.get_selected_text(new_game_text, load_text, exit_text, save_text)
 
@@ -155,4 +157,6 @@ class MenuScene(Scene):
                     GameUtils.get_text_center_width(screen, save_text),
                     GameUtils.get_text_center_height(screen, save_text) + 180))
 
+            screen.blit(version_text, (screen.get_width() - exit_text.get_width(),
+                                       screen.get_height() - (1.5 * exit_text.get_height())))
             pygame.display.update()

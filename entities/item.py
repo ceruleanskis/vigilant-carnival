@@ -13,40 +13,48 @@ import utilities.map_helpers
 log = utilities.logsetup.log()
 
 
+class ItemComponentType:
+    CONSUMABLE = "consumable"
+    EQUIPPABLE = "equippable"
+
 class Item(entities.entity.Entity):
 
-    def __init__(self, name: str, ID: int):
+    def __init__(self, key: str, ID: int):
         import components.component
         import scenes.game_scene
         import components.consumable
 
-        super().__init__(name)
+        super().__init__(key)
+        self.name = utilities.load_data.ITEM_DATA[self.key]['name']
         self.ID = ID
         self.x_pos = 1
         self.y_pos = 1
 
         self.item_component = components.component.ItemComponent(self)
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = \
-            utilities.load_data.ITEM_DATA[self.name]['tileset_alpha']
+            utilities.load_data.ITEM_DATA[self.key]['tileset_alpha']
         convert_alpha = True
         if self.tileset_alpha is None:
             convert_alpha = False
 
-        self.image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ITEM_DATA[self.name]['image'],
+        self.image = utilities.game_utils.GameUtils.load_sprite(utilities.load_data.ITEM_DATA[self.key]['image'],
                                                                 self.tileset_alpha, convert_alpha)
-        self.type = utilities.load_data.ITEM_DATA[self.name]['type']
-        self.description = utilities.load_data.ITEM_DATA[self.name]['description']
+        self.type = utilities.load_data.ITEM_DATA[self.key]['type']
+        self.description = utilities.load_data.ITEM_DATA[self.key]['description']
         self.image_num = 0
         self.rect = self.image.get_rect()
         self.rect.x = self.x_pos * utilities.constants.TILE_SIZE
         self.rect.y = self.y_pos * utilities.constants.TILE_SIZE
         self.parent_scene: scenes.game_scene.GameScene = None
         self.consumable = None
+        self.equippable = None
         self.load_consumables()
+        self.load_equippable()
 
     def to_json(self) -> typing.Dict:
         return {
             'name': self.name,
+            'key': self.key,
             'x_pos': self.x_pos,
             'y_pos': self.y_pos,
             'id': self.ID,
@@ -55,8 +63,8 @@ class Item(entities.entity.Entity):
 
     @staticmethod
     def from_json(json_obj: typing.Dict) -> 'Item':
-        item_name = json_obj['name']
-        item = Item(item_name, json_obj['id'])
+        item_key = json_obj['key']
+        item = Item(item_key, json_obj['id'])
         item.x_pos = json_obj['x_pos']
         item.y_pos = json_obj['y_pos']
 
@@ -91,24 +99,50 @@ class Item(entities.entity.Entity):
         # self.teleport(self.x_pos, self.y_pos)
         self.update()
 
-    def load_consumables(self):
-        import components.consumable
+    def load_equippable(self):
+        import components.equippable
 
-        if "consumable" in utilities.load_data.ITEM_DATA[self.name]:
-            consumable_type = None
-            if "type" in utilities.load_data.ITEM_DATA[self.name]["consumable"][0]:
-                consumable_type = utilities.load_data.ITEM_DATA[self.name]["consumable"][0]['type']
-            else:
-                log.debug(f'No type found for {self.name} {["consumable"][0]} in items.json.')
+        item_data = utilities.load_data.ITEM_DATA[self.key]
+        component_type = ItemComponentType.EQUIPPABLE
+        slot = None
 
-            if consumable_type == "HealingConsumable":
-                if "amount" in utilities.load_data.ITEM_DATA[self.name]["consumable"][0]:
-                    amount = utilities.load_data.ITEM_DATA[self.name]["consumable"][0]["amount"]
-                    self.consumable = components.consumable.HealingConsumable(amount, entity=self)
-                else:
-                    log.debug(f'No amount found for HealingConsumable {self.name} in items.json.')
-            else:
-                log.debug(f'Consumable type {consumable_type} not found.')
+        if component_type in item_data:
+            modifiers = {
+                'strength_modifier': 0,
+                'hp_modifier': 0
+            }
+
+            for modifier in modifiers:
+                if modifier in item_data[component_type][0]:
+                    modification_amount = item_data[component_type][0][modifier]
+                    modifiers[modifier] = modification_amount
+
+            if 'slot' in item_data[component_type][0]:
+                slot = item_data[component_type][0]['slot']
+
+            self.equippable = components.equippable.Equippable(self, slot, **modifiers)
         else:
-            log.info("None type consumable")
+            self.equippable = None
+
+    def load_consumables(self):
+        item_data = utilities.load_data.ITEM_DATA[self.key]
+        component_type = ItemComponentType.CONSUMABLE
+        if component_type in item_data:
+            self.get_consumable_type(component_type, item_data)
+        else:
             self.consumable = None
+
+    def get_consumable_type(self, component_type, item_data):
+        import components.consumable
+        if "type" in item_data[component_type][0]:
+            consumable_type = item_data[component_type][0]['type']
+        else:
+            raise Exception(f'No type found for {self.key} {[component_type][0]} in items.json.')
+        if consumable_type == "HealingConsumable":
+            if "amount" in item_data[component_type][0]:
+                amount = item_data[component_type][0]["amount"]
+                self.consumable = components.consumable.HealingConsumable(amount, entity=self)
+            else:
+                log.debug(f'No amount found for HealingConsumable {self.key} in items.json.')
+        else:
+            raise Exception(f'{component_type} type {consumable_type} not found.')

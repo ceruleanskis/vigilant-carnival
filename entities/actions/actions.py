@@ -39,7 +39,12 @@ class ItemAction(BaseAction):
     def perform(self) -> int:
         if self.item is None:
             raise Exception
-        return self.item.consumable.activate(self)
+        elif self.item.consumable:
+            return self.item.consumable.activate(self)
+        elif self.item.equippable:
+            return self.item.equippable.activate(self)
+        else:
+            raise Exception("Type is not equippable or consumable")
 
 
 class MoveAction(BaseAction):
@@ -71,7 +76,7 @@ class PickUpItemAction(BaseAction):
         elif isinstance(self.item, entities.item.Item):
             self.item.disappear()
             self.creature.inventory.append(self.item)
-            log.info(f"You picked up a {self.item.name}.")
+            log.info(f"You picked up a {self.item.name.title()}.")
             return self.action_cost
         else:
             raise AttributeError
@@ -147,6 +152,6 @@ class MeleeAction(BaseAction):
     def perform(self) -> int:
         damage = self.creature.fighter_component.strength
         log.debug(
-            f'The {self.creature.name}_{self.creature.ID} kicks the {self.melee_target.name}_{self.melee_target.ID} for {damage}.')
+            f'The {self.creature.name.title()}-{self.creature.ID} kicks the {self.melee_target.name.title()}-{self.melee_target.ID} for {damage}.')
         self.melee_target.fighter_component.take_damage(damage)
         return self.action_cost
