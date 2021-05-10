@@ -93,11 +93,18 @@ class Player(entities.creature.Creature):
             # raise err
             return None
 
-    def drop_item(self, item: entities.item.Item):
-        if item is not None and item in self.inventory and isinstance(item, entities.item.Item):
-            self.parent_scene.place_item(item,
-                                         utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
-            item.destroy(self)
+    def drop_item(self, item: entities.item.Item, from_equipped: bool = False):
+        if item is not None and isinstance(item, entities.item.Item):
+            if not from_equipped:
+                if item in self.inventory:
+                    self.parent_scene.place_item(item,
+                                                 utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
+                item.destroy(self)
+            else:
+                self.equipment[item.equippable.slot] = None
+                self.parent_scene.place_item(item,
+                                             utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
+            log.info(f'You drop the {item.name}.')
 
     def take_turn(self) -> int:
         cost = self.current_action.perform()
@@ -105,7 +112,7 @@ class Player(entities.creature.Creature):
         return cost
 
     def unequip_item(self, item: entities.item.Item):
-        if item is not None and item.equippable and isinstance(item.equippable,components.equippable.Equippable):
+        if item is not None and item.equippable and isinstance(item.equippable, components.equippable.Equippable):
             self.equipment[item.equippable.slot] = None
             self.inventory.append(item)
             self.current_action = entities.actions.actions.ItemAction(self, item)
