@@ -66,15 +66,11 @@ class GameScene(Scene):
 
         if not loaded_json:
             self.set_up_new_game()
+            self.set_player_pos(None)
         else:
             self.load(loaded_json)
 
         self.all_sprites.add(self.player)
-        self.set_player_pos(self.loaded_player_pos)
-        if self.loaded_player_hp is None:
-            self.player.fighter_component.hp = self.player.fighter_component.max_hp
-        else:
-            self.player.fighter_component.hp = self.loaded_player_hp
         self.creatures.append(self.player)
         self.time_manager.register(self.player)
 
@@ -168,12 +164,8 @@ class GameScene(Scene):
     def load(self, json_data):
         self.tile_map: components.map.TileMap = components.map.TileMap.from_json(json_data['map'])
         self.tile_map.init_json_map()
-        player_pos = json_data['player_pos']
-        player_hp = json_data['player_hp']
-        self.player.inventory = [entities.item.Item.from_json(item) for item in json_data['player_inventory']]
-        self.loaded_player_pos = utilities.ship_generator.Coordinate(player_pos[0], player_pos[1])
-        self.loaded_player_hp = player_hp
-
+        self.player = entities.player.Player.from_json(json_data['player'], creature_type='Player')
+        self.set_player_pos(utilities.ship_generator.Coordinate(self.player.x_pos, self.player.y_pos))
         self.add_map_tiles_to_sprite_list()
 
         if 'creatures' in json_data:
@@ -206,12 +198,10 @@ class GameScene(Scene):
             'version': utilities.constants.VERSION,
             'seed': utilities.seed.seed.hex,
             'level': 1,
-            'player_pos': [self.player.x_pos, self.player.y_pos],
+            'player': self.player.to_json(),
             'creatures': creature_data,
             'items': item_data,
-            'map': self.tile_map.to_json(),
-            'player_inventory': [item.to_json() for item in self.player.inventory],
-            'player_hp': self.player.fighter_component.hp
+            'map': self.tile_map.to_json()
         }
 
         self.last_saved = utilities.save_manager.SaveManager.save_game(json_data)

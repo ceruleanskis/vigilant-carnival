@@ -91,19 +91,35 @@ class Creature(entities.entity.Entity):
             'id': self.ID,
             'tileset_alpha': self.tileset_alpha,
             'previous_x_pos': self.previous_x_pos,
-            'previous_y_pos': self.previous_y_pos
+            'previous_y_pos': self.previous_y_pos,
+            'hp': self.fighter_component.hp,
+            'inventory': [item.to_json() for item in self.inventory],
+            'equipment': {key: (self.equipment[key].to_json() if self.equipment[key] is not None else None) for key in
+                          self.equipment}
         }
 
     @staticmethod
-    def from_json(json_obj: typing.Dict) -> 'Creature':
+    def from_json(json_obj: typing.Dict, creature_type: str = 'Creature') -> typing.Union['Creature', 'Player']:
+        import entities.player
         creature_key = json_obj['key']
-        creature = Creature(creature_key, json_obj['id'])
+        if creature_type == 'Creature':
+            creature = Creature(creature_key, json_obj['id'])
+        elif creature_type == 'Player':
+            creature = entities.player.Player()
+        else:
+            raise ValueError(f'Cannot use method from_json() with creature_type given ({creature_type})')
         creature.x_pos = json_obj['x_pos']
         creature.y_pos = json_obj['y_pos']
         creature.action_points = json_obj['action_points']
         creature.speed = json_obj['speed']
         creature.previous_x_pos = json_obj['previous_x_pos']
         creature.previous_y_pos = json_obj['previous_y_pos']
+        creature.fighter_component.hp = json_obj['hp']
+        creature.inventory = [entities.item.Item.from_json(item) for item in json_obj['inventory']]
+        equipment = [json_obj['equipment'][item] for item in json_obj['equipment']]
+        for item in [item for item in equipment if item is not None]:
+            item_obj = entities.item.Item.from_json(item)
+            creature = Creature.equip_from_json(creature, item_obj)
 
         try:
             creature.tileset_alpha = json_obj['tileset_alpha']
@@ -207,3 +223,12 @@ class Creature(entities.entity.Entity):
         self.fighter_component = None
         self.blocks = False
         self.current_action = None
+
+    @staticmethod
+    def equip_from_json(creature: 'Creature', item: 'entities.item.Item'):
+        if item is not None and item.equippable and isinstance(
+                item.equippable,
+                components.equippable.Equippable):
+            creature.equipment[item.equippable.slot] = item
+
+        return creature
