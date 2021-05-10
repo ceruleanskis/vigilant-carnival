@@ -129,7 +129,11 @@ class InventoryScene(Scene):
             else:
                 raise ValueError(f"Unknown action {self.action_menu_items[1]}")
         elif self.selected_action_menu_item == 2:  # Drop
-            self.player.drop_item(self.player.inventory[self.selected_menu_item])
+            if self.should_traverse_equipment_menu:
+                self.player.drop_item(self.player.equipment[self.selected_equipment_menu_item], from_equipped=True)
+                self.should_render_action_menu = False
+            else:
+                self.player.drop_item(self.player.inventory[self.selected_menu_item])
 
     def traverse_action_menu(self, direction) -> None:
         """
