@@ -19,17 +19,23 @@ class MakeFileHandler(logging.handlers.RotatingFileHandler):
 
 class InGameLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
-        if record.levelname == 'INFO':
-            utilities.messages.message_log.add_message(utilities.messages.Message(record.message, utilities.constants.LIGHT_GREEN))
-        if record.levelname != 'INFO' and utilities.constants.DEBUG:
-            color = utilities.constants.WHITE
-            if record.levelname == 'DEBUG':
-                color = utilities.constants.GREEN
-            elif record.levelname == 'ERROR':
-                color = utilities.constants.RED
-            elif record.levelname == 'CRITICAL':
-                color = utilities.constants.ORANGE
-            elif record.levelname == 'WARNING':
-                color = utilities.constants.YELLOW
+        if hasattr(record, 'color'):
+            color = record.__getattribute__('color')
+        else:
+            color = None
 
+        if record.levelname == 'INFO':
+            color = (utilities.constants.LIGHT_GREEN if color is None else color)
+            utilities.messages.message_log.add_message(utilities.messages.Message(record.message, color))
+        if record.levelname != 'INFO' and utilities.constants.DEBUG:
+            if record.levelname == 'DEBUG':
+                color = (utilities.constants.GREEN if color is None else color)
+            elif record.levelname == 'ERROR':
+                color = (utilities.constants.RED if color is None else color)
+            elif record.levelname == 'CRITICAL':
+                color = (utilities.constants.ORANGE if color is None else color)
+            elif record.levelname == 'WARNING':
+                color = (utilities.constants.YELLOW if color is None else color)
+
+            color = (utilities.constants.WHITE if color is None else color)
             utilities.messages.message_log.add_message(utilities.messages.Message(record.message, color))

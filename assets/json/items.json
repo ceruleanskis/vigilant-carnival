@@ -27,7 +27,8 @@
     "equippable": [
       {
         "slot": "weapon",
-        "strength_modifier": 2
+        "strength_modifier": 2,
+        "verb": "stab"
       }
     ],
     "description": "A rusty knife.",

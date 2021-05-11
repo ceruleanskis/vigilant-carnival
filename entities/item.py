@@ -105,6 +105,7 @@ class Item(entities.entity.Entity):
         item_data = utilities.load_data.ITEM_DATA[self.key]
         component_type = ItemComponentType.EQUIPPABLE
         slot = None
+        verb = None
 
         if component_type in item_data:
             modifiers = {
@@ -120,7 +121,10 @@ class Item(entities.entity.Entity):
             if 'slot' in item_data[component_type][0]:
                 slot = item_data[component_type][0]['slot']
 
-            self.equippable = components.equippable.Equippable(self, slot, **modifiers)
+            if 'verb' in item_data[component_type][0]:
+                verb = item_data[component_type][0]['verb']
+
+            self.equippable = components.equippable.Equippable(self, slot, verb, **modifiers)
         else:
             self.equippable = None
 

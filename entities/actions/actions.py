@@ -76,7 +76,7 @@ class PickUpItemAction(BaseAction):
         elif isinstance(self.item, entities.item.Item):
             self.item.disappear()
             self.creature.inventory.append(self.item)
-            log.info(f"You picked up a {self.item.name.title()}.")
+            log.info(f"You pick up the {self.item.name.title()}.")
             return self.action_cost
         else:
             raise AttributeError
@@ -150,8 +150,29 @@ class MeleeAction(BaseAction):
         self.action_cost = 100
 
     def perform(self) -> int:
+        import utilities.helpers
+        import entities.player
         damage = self.creature.fighter_component.strength
-        log.debug(
-            f'The {self.creature.name.title()}-{self.creature.ID} kicks the {self.melee_target.name.title()}-{self.melee_target.ID} for {damage}.')
+        weapon: entities.item.Item = self.creature.equipment[utilities.helpers.EquipmentSlot.WEAPON]
+        performer_name = f'The {self.creature.name.title()}'
+        target_name = f'the {self.melee_target.name.title()}'
+        verb = 'kick'
+        add_s = True
+        weapon_flavor_text = ''
+
+        if isinstance(self.creature, entities.player.Player):
+            add_s = False
+            performer_name = 'You'
+
+        if isinstance(self.melee_target, entities.player.Player):
+            target_name = 'you'
+
+        if weapon is not None:
+            verb = weapon.equippable.verb
+            weapon_flavor_text = f' with the {weapon.name.title()}'
+
+        melee_text = f'{performer_name} {verb}{"s" if add_s else ""} {target_name}{weapon_flavor_text} for {damage}.'
+
+        log.info(melee_text)
         self.melee_target.fighter_component.take_damage(damage)
         return self.action_cost

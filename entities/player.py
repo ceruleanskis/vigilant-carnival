@@ -104,7 +104,7 @@ class Player(entities.creature.Creature):
                 self.equipment[item.equippable.slot] = None
                 self.parent_scene.place_item(item,
                                              utilities.ship_generator.Coordinate(self.x_pos, self.y_pos))
-            log.info(f'You drop the {item.name}.')
+            log.info(f'You drop the {item.name.title()}.')
 
     def take_turn(self) -> int:
         cost = self.current_action.perform()
