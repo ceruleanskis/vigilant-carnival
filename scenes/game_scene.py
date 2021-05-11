@@ -83,6 +83,8 @@ class GameScene(Scene):
         self.update_parent()
         self.update_distance_map()
 
+        self.updated_rects = []
+
     def get_random_unoccupied_coord_in_room(self,
                                             room: utilities.ship_generator.Rectangle) -> utilities.ship_generator.Coordinate:
         random_pos = self.tile_map.random_coord_in_room(room)
@@ -115,8 +117,8 @@ class GameScene(Scene):
         return False
 
     def set_up_new_game(self):
-        width = 20
-        height = 20
+        width = 70
+        height = 70
         self.tile_map = components.map.TileMap(width, height)
         self.tile_map.generate_map()
         self.add_map_tiles_to_sprite_list()
@@ -237,8 +239,8 @@ class GameScene(Scene):
                 self.update_parent()
                 self.time_manager.tick()
                 self.update_distance_map()
+                self.update_fov()
 
-            self.update_fov()
             for event in events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
@@ -278,9 +280,10 @@ class GameScene(Scene):
             message = utilities.messages.message_log.messages[i]
             message_display = self.message_font.render(message.text, True, message.color)
             message_display_rect = message_display.get_rect()
-            message_log_surface.blit(message_display, (10, utilities.constants.FONT_SIZE * i + 10,
-                                                       message_display_rect.width, message_display_rect.height
-                                                       ))
+            self.updated_rects.append(
+                message_log_surface.blit(message_display, (10, utilities.constants.FONT_SIZE * i + 10,
+                                                           message_display_rect.width, message_display_rect.height
+                                                           )))
 
         return message_log_surface
 
@@ -303,10 +306,11 @@ class GameScene(Scene):
         strength_icon = utilities.game_utils.GameUtils.load_sprite(strength_icon_path,
                                                                    colorkey=utilities.constants.BLACK,
                                                                    convert_alpha=True)
-        stats_display_surface.blit(strength_icon,
-                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
-                                    strength_icon.get_width(),
-                                    strength_icon.get_height()])
+        self.updated_rects.append(stats_display_surface.blit(strength_icon,
+                                                             [10, 10 + ((utilities.constants.TILE_SIZE * order) + (
+                                                                     order * 5)),
+                                                              strength_icon.get_width(),
+                                                              strength_icon.get_height()]))
         strength_text = "STR:"
         strength_text_color = utilities.constants.YELLOW
         if self.player.fighter_component:
@@ -315,20 +319,21 @@ class GameScene(Scene):
 
     def render_stat(self, order, stats_display_surface, icon, text, text_color):
         strength_display = self.stats_display_font.render(text, True, text_color)
-        stats_display_surface.blit(strength_display,
-                                   [icon.get_width() + 20,
-                                    (icon.get_height() // 2) + (order * 5) + (
-                                            utilities.constants.TILE_SIZE * order) - 15,
-                                    strength_display.get_width(),
-                                    strength_display.get_height()])
+        self.updated_rects.append(stats_display_surface.blit(strength_display,
+                                                             [icon.get_width() + 20,
+                                                              (icon.get_height() // 2) + (order * 5) + (
+                                                                      utilities.constants.TILE_SIZE * order) - 15,
+                                                              strength_display.get_width(),
+                                                              strength_display.get_height()]))
 
     def render_health_display(self, stats_display_surface, order: int = 0):
         health_icon_path = utilities.load_data.INTERFACE_DATA["health"]
         health_icon = utilities.game_utils.GameUtils.load_sprite(health_icon_path)
-        stats_display_surface.blit(health_icon,
-                                   [10, 10 + ((utilities.constants.TILE_SIZE * order) + (order * 5)),
-                                    health_icon.get_width(),
-                                    health_icon.get_height()])
+        self.updated_rects.append(stats_display_surface.blit(health_icon,
+                                                             [10, 10 + ((utilities.constants.TILE_SIZE * order) + (
+                                                                     order * 5)),
+                                                              health_icon.get_width(),
+                                                              health_icon.get_height()]))
         health_text = 'DEAD'
         health_text_color = utilities.constants.GREEN
         if self.player.fighter_component:
@@ -350,14 +355,16 @@ class GameScene(Scene):
         return fps_display
 
     def render(self, screen):
+        self.updated_rects = []
 
         if not self.background_rendered:
-            self.background_surface.blit(self.background_image, self.background_image.get_rect())
+            self.updated_rects.append(
+                self.background_surface.blit(self.background_image, self.background_image.get_rect()))
             self.background_rendered = True
 
-        screen.blit(self.background_surface, (0, 0))
+        self.updated_rects.append(screen.blit(self.background_surface, (0, 0)))
 
-        self.surface.blit(self.background_image, self.background_image.get_rect())
+        self.updated_rects.append(self.surface.blit(self.background_image, self.background_image.get_rect()))
 
         # self.all_sprites.clear(screen, self.surface)
         coord = components.camera.track_camera(self.player.x_pos, self.player.y_pos, self.tile_map.width,
@@ -375,54 +382,59 @@ class GameScene(Scene):
                     start_y = 0
 
                 tile: components.map.Tile = self.tile_map.tile_map[start_x][start_y]
+                if not tile.visible:
+                    continue
+
                 tile_rect = ((x * utilities.constants.TILE_SIZE),
                              (y * utilities.constants.TILE_SIZE),
                              utilities.constants.TILE_SIZE, utilities.constants.TILE_SIZE)
                 if tile.type != 'stone':
                     tile.render(screen)
-                    self.surface.blit(tile.image, tile_rect)
+                    self.updated_rects.append(self.surface.blit(tile.image, tile_rect))
 
                 for enemy in self.enemy_sprites:
                     enemy.visible = self.tile_map.tile_map[start_x][start_y].visible
                     if enemy.visible and enemy.x_pos == start_x and enemy.y_pos == start_y:
                         enemy.render(screen)
-                        self.surface.blit(enemy.image, tile_rect)
+                        self.updated_rects.append(self.surface.blit(enemy.image, tile_rect))
 
                 for item in self.item_sprites:
                     item.visible = self.tile_map.tile_map[start_x][start_y].visible
                     if item.image is not None and item.visible and item.x_pos == start_x and item.y_pos == start_y:
                         item.render(screen)
-                        self.surface.blit(item.image, tile_rect)
+                        self.updated_rects.append(self.surface.blit(item.image, tile_rect))
 
                 if self.player.x_pos == start_x and self.player.y_pos == start_y:
                     self.player.render(screen)
-                    self.surface.blit(self.player.image, tile_rect)
+                    self.updated_rects.append(self.surface.blit(self.player.image, tile_rect))
 
                 if utilities.constants.PATHFINDING_DISPLAY:
                     self.display_pathfinding(tile, tile_rect)
 
-        self.surface.blit(self.render_message_log(),
-                          [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
-                           utilities.constants.MESSAGE_LOG_WIDTH,
-                           utilities.constants.MESSAGE_LOG_HEIGHT
-                           ])
+        self.updated_rects.append(self.surface.blit(self.render_message_log(),
+                                                    [0,
+                                                     utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                                                     utilities.constants.MESSAGE_LOG_WIDTH,
+                                                     utilities.constants.MESSAGE_LOG_HEIGHT
+                                                     ]))
 
-        self.surface.blit(self.render_stats_display(),
-                          [utilities.constants.DISPLAY_WIDTH - utilities.constants.STATS_DISPLAY_WIDTH,
-                           utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
-                           utilities.constants.STATS_DISPLAY_WIDTH,
-                           utilities.constants.MESSAGE_LOG_HEIGHT
-                           ])
+        self.updated_rects.append(self.surface.blit(self.render_stats_display(),
+                                                    [
+                                                        utilities.constants.DISPLAY_WIDTH - utilities.constants.STATS_DISPLAY_WIDTH,
+                                                        utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                                                        utilities.constants.STATS_DISPLAY_WIDTH,
+                                                        utilities.constants.MESSAGE_LOG_HEIGHT
+                                                    ]))
 
         if utilities.constants.TURN_COUNT_DISPLAY:
             turn_display = self.render_turn_display()
-            self.surface.blit(turn_display,
-                              [0, 0,
-                               utilities.constants.STATS_DISPLAY_WIDTH,
-                               utilities.constants.MESSAGE_LOG_HEIGHT
-                               ])
+            self.updated_rects.append(self.surface.blit(turn_display,
+                                                        [0, 0,
+                                                         utilities.constants.STATS_DISPLAY_WIDTH,
+                                                         utilities.constants.MESSAGE_LOG_HEIGHT
+                                                         ]))
 
-        screen.blit(self.surface, self.surface.get_rect())
+        self.updated_rects.append(screen.blit(self.surface, self.surface.get_rect()))
 
     def display_pathfinding(self, tile, tile_rect: pygame.Rect):
         index_in_distance_map = utilities.map_helpers.MapHelpers.get_index(self.distance_map, tile)

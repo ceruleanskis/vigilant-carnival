@@ -41,6 +41,7 @@ class Tile(entities.entity.Entity):
         self.tileset_alpha: typing.Union[None, typing.Tuple[int, int, int]] = None
         self.pathfind_distance = 0
         self.discovered = False
+        self.loaded_already = False
 
     @staticmethod
     def from_json(json_obj: Dict, x=None, y=None) -> 'Tile':
@@ -231,7 +232,8 @@ class TileMap:
         tile: Tile = self.tile_map[x][y]
 
         tile.visible = visibility
-        self.draw_tile(tile)
+        if tile.visible:
+            self.draw_tile(tile)
 
     def is_blocked_at_location(self, x: int, y: int) -> bool:
         tile: Tile = self.tile_map[x][y]

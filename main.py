@@ -36,6 +36,8 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
     active_scene: Scene = starting_scene
     scenes.director.push(active_scene)
 
+    pygame.event.set_allowed([QUIT, KEYDOWN])
+
     # Main loop
     while True:
         active_scene = scenes.director.top()
@@ -60,11 +62,16 @@ def run_game(starting_scene: Scene = MenuScene()) -> None:
                 filtered_events.append(event)
 
         active_scene.handle_input(filtered_events, pressed_keys)
+        active_scene.block_input = True
         active_scene.update()
         active_scene.render(screen)
         show_fps(screen, clock, fps_font)
-        pygame.display.flip()
+        if hasattr(active_scene, 'updated_rects') and active_scene.updated_rects:
+            pygame.display.update(active_scene.updated_rects)
+        else:
+            pygame.display.flip()
         clock.tick(utilities.constants.FPS)
+        active_scene.block_input = False
 
 
 def show_fps(screen, clock, font):

@@ -9,6 +9,7 @@ import scenes
 class Scene(ABC):
     def __init__(self):
         super().__init__()
+        self.block_input = False
 
     @abstractmethod
     def handle_input(self, events, pressed_keys):

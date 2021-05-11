@@ -67,7 +67,7 @@ class Creature(entities.entity.Entity):
         self.health_modified = False
         self.health_modified_amount = 0
         self.did_set_corpse_image = False
-        self.current_action = entities.actions.actions.ChasePlayerAction(self)
+        self.current_action = entities.actions.actions.RandomMoveAction(self)
         self.inventory: typing.List[entities.item.Item] = []
         self.equipment: typing.Dict[utilities.helpers.EquipmentSlot, typing.Union[None, entities.item.Item]] = {
             utilities.helpers.EquipmentSlot.WEAPON: None,
@@ -214,7 +214,7 @@ class Creature(entities.entity.Entity):
         self.update()
 
     def take_turn(self) -> int:
-        self.current_action = entities.actions.actions.ChasePlayerAction(self)
+        self.current_action = entities.actions.actions.RandomMoveAction(self)
         return self.current_action.perform()
 
     def die(self):
