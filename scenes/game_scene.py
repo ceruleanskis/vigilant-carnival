@@ -82,6 +82,7 @@ class GameScene(Scene):
 
         self.update_parent()
         self.update_distance_map()
+        self.update_fov()
 
     def get_random_unoccupied_coord_in_room(self,
                                             room: utilities.ship_generator.Rectangle) -> utilities.ship_generator.Coordinate:
@@ -115,8 +116,8 @@ class GameScene(Scene):
         return False
 
     def set_up_new_game(self):
-        width = 20
-        height = 20
+        width = 25
+        height = 25
         self.tile_map = components.map.TileMap(width, height)
         self.tile_map.generate_map()
         self.add_map_tiles_to_sprite_list()
@@ -237,8 +238,8 @@ class GameScene(Scene):
                 self.update_parent()
                 self.time_manager.tick()
                 self.update_distance_map()
+                self.update_fov()
 
-            self.update_fov()
             for event in events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.switch_scene(scenes.menu_scene.MenuScene(title=False))
