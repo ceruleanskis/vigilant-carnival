@@ -58,7 +58,9 @@ class Triangle:
 
 
 class Rectangle:
-    def __init__(self, x: int, y: int, width: int, h: int):
+    id: None
+    def __init__(self, id: int, x: int, y: int, width: int, h: int):
+        self.int = int
         self.x = x
         self.y = y
         self.width = width
@@ -77,12 +79,13 @@ class Rectangle:
 
     @staticmethod
     def from_json(json_obj: typing.Dict) -> 'Rectangle':
-        return Rectangle(json_obj['x'], json_obj['y'], json_obj['width'], json_obj['height'])
+        return Rectangle(json_obj.get('id', None), json_obj['x'], json_obj['y'], json_obj['width'], json_obj['height'])
 
     def to_json(self):
         return {
+            'id': self.id,
             'x': self.x,
-            'y': self.y,
+            'y': self.y, 
             'width': self.width,
             'height': self.height
         }
@@ -240,7 +243,7 @@ class ShipGenerator:
         self.bridge: Rectangle = self.create_bridge()
         # self.level_array = list(map(list, zip(*self.level_array)))[::1]
 
-    def create_bridge(self) -> Rectangle:
+    def create_bridge(self, id: int) -> Rectangle:
         center_x = self.map_width // 2
         center_y = self.map_height // 2
         if self.orientation == Orientation.vertical:
@@ -496,5 +499,5 @@ if __name__ == '__main__':
     execution_time = stop - start
     logger.info(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
 
-    rect = Rectangle(0, 0, 3, 3)
-    rect_2 = Rectangle(0, 0, 3, 3)
+    # rect = Rectangle(0, 0, 3, 3)
+    # rect_2 = Rectangle(0, 0, 3, 3)
