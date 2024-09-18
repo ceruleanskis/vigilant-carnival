@@ -136,7 +136,7 @@ class MenuScene(Scene):
 
             rect = selected_text.get_rect()
 
-            pygame.draw.rect(selected_text, utilities.constants.BLUE, rect, 1)
+            pygame.draw.rect(selected_text, utilities.constants.LIGHT_BLUE, rect, 1)
 
             screen.blit(new_game_text, (
                 GameUtils.get_text_center_width(screen, new_game_text),
