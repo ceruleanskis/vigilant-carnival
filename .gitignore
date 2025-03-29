@@ -76,3 +76,4 @@ pythonenv*
 /saves/
 logs/*
 /assets/tilesets/main/
+.DS_Store
