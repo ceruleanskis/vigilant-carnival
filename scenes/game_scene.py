@@ -360,7 +360,6 @@ class GameScene(Scene):
 
         self.surface.blit(self.background_image, self.background_image.get_rect())
 
-        # self.all_sprites.clear(screen, self.surface)
         coord = components.camera.track_camera(self.player.x_pos, self.player.y_pos, self.tile_map.width,
                                                self.tile_map.height)
 
@@ -403,14 +402,14 @@ class GameScene(Scene):
                     self.display_pathfinding(tile, tile_rect)
 
         self.surface.blit(self.render_message_log(),
-                          [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                          [0, utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT,
                            utilities.constants.MESSAGE_LOG_WIDTH,
                            utilities.constants.MESSAGE_LOG_HEIGHT
                            ])
 
         self.surface.blit(self.render_stats_display(),
                           [utilities.constants.DISPLAY_WIDTH - utilities.constants.STATS_DISPLAY_WIDTH,
-                           utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT - 60,
+                           utilities.constants.DISPLAY_HEIGHT - utilities.constants.MESSAGE_LOG_HEIGHT,
                            utilities.constants.STATS_DISPLAY_WIDTH,
                            utilities.constants.MESSAGE_LOG_HEIGHT
                            ])
