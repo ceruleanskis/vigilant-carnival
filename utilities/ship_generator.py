@@ -60,7 +60,7 @@ class Triangle:
 class Rectangle:
     id: None
     def __init__(self, id: int, x: int, y: int, width: int, h: int):
-        self.int = int
+        self.id = id
         self.x = x
         self.y = y
         self.width = width
@@ -124,39 +124,6 @@ class Rectangle:
         :rtype: 
         """
         return coord in self.get_room_coords(without_corners)
-        # triangle_APD = Triangle(Coordinate(self.x, self.y), coord, Coordinate(self.x, self.y + self.height))
-        # triangle_APD_area = triangle_APD.get_area()
-        #
-        # triangle_DPC = Triangle(Coordinate(self.x, self.y + self.height), coord,
-        #                         Coordinate(self.x + self.width, self.y + self.height))
-        # triangle_DPC_area = triangle_DPC.get_area()
-        #
-        # triangle_CPB = Triangle(Coordinate(self.x + self.width, self.y + self.height), coord,
-        #                         Coordinate(self.x + self.width, self.y))
-        # triangle_CPB_area = triangle_CPB.get_area()
-        #
-        # triangle_PBA = Triangle(Coordinate(self.x + self.width, self.y), coord, Coordinate(self.x, self.y))
-        # triangle_PBA_area = triangle_PBA.get_area()
-        #
-        # sum_of_areas = triangle_APD_area + triangle_DPC_area + triangle_CPB_area + triangle_PBA_area
-        # print(f'sum of areas: {sum_of_areas}, rect area: {self.area}, '
-        #       f'APD area: {triangle_APD_area}, DPC area: {triangle_DPC_area}, '
-        #       f'CPB area: {triangle_CPB_area}, PBA area: {triangle_PBA_area}')
-        # if sum_of_areas > self.area:
-        #     return False
-        # # elif sum_of_areas == self.area:
-        # #     pass
-        #     # if triangle_APD_area == 0 or triangle_DPC_area == 0 or triangle_CPB_area == 0 or triangle_PBA_area == 0:
-        #     #     # ON the rectangle
-        #     #     print("on the rectangle")
-        #     #     return True
-        #     # else:
-        #     #     # IN the rectangle
-        #     #     print("in the rectangle")
-        #     #     return True
-        # else: #idk
-        #     return True
-        #     # raise Exception("calc exception?")
 
     def top_left_corner(self):
         return Coordinate(self.x, self.y)
@@ -240,7 +207,7 @@ class ShipGenerator:
         self.num_rooms = num_rooms
         self.room_centers: typing.List[typing.Tuple[int, int]] = []
         self.level_array = [[' ' for _ in range(map_height)] for _ in range(map_width)]
-        self.bridge: Rectangle = self.create_bridge()
+        self.bridge: Rectangle = self.create_bridge(id=1)
         # self.level_array = list(map(list, zip(*self.level_array)))[::1]
 
     def create_bridge(self, id: int) -> Rectangle:
@@ -249,11 +216,11 @@ class ShipGenerator:
         if self.orientation == Orientation.vertical:
             bridge_x = center_x - (self.bridge_width // 2)
             bridge_y = 0
-            bridge = Rectangle(bridge_x, bridge_y, self.bridge_width, self.map_height)
+            bridge = Rectangle(id, bridge_x, bridge_y, self.bridge_width, self.map_height)
         else:  # Orientation.horizontal
             bridge_x = 0
             bridge_y = center_y - (self.bridge_width // 2)
-            bridge = Rectangle(bridge_x, bridge_y, self.map_width, self.bridge_width)
+            bridge = Rectangle(id, bridge_x, bridge_y, self.map_width, self.bridge_width)
 
         return bridge
 
@@ -273,6 +240,7 @@ class ShipGenerator:
             h = existing_room.height + border
 
             room_with_border = Rectangle(
+                -1,
                 x,
                 y,
                 w, h
@@ -289,7 +257,7 @@ class ShipGenerator:
                 new_room: Rectangle = room
                 old_room = room
                 for x in range(steps_to_bridge + 1):
-                    new_room = Rectangle(new_room.x + 1, new_room.y, new_room.width, new_room.height)
+                    new_room = Rectangle(new_room.id, new_room.x + 1, new_room.y, new_room.width, new_room.height)
                     for existing_room in self.rooms:
                         if Rectangle.do_rectangles_overlap(new_room, existing_room):
                             return old_room
@@ -303,7 +271,7 @@ class ShipGenerator:
                 new_room: Rectangle = room
                 old_room = room
                 for x in range(steps_to_bridge):
-                    new_room = Rectangle(new_room.x - 1, new_room.y, new_room.width, new_room.height)
+                    new_room = Rectangle(new_room.id +1, new_room.x - 1, new_room.y, new_room.width, new_room.height)
                     for existing_room in self.rooms:
                         if Rectangle.do_rectangles_overlap(new_room, existing_room):
                             return old_room
@@ -315,14 +283,14 @@ class ShipGenerator:
             logger.error('slide direction not implemented')
             raise NotImplementedError
 
-    def create_room(self):
+    def create_room(self, id: int):
         # vertical
         room_width = random.randrange(self.min_room_size, self.max_room_size)
         room_height = random.randrange(self.min_room_size, self.max_room_size)
         room_x = random.randrange(0, self.bridge.x - room_width)
         room_y = random.randrange(0, self.map_height - room_height)
 
-        room = Rectangle(room_x, room_y, room_width, room_height)
+        room = Rectangle(id, room_x, room_y, room_width, room_height)
 
         # TODO: horizontal
 
@@ -372,7 +340,7 @@ class ShipGenerator:
 
     def try_create_room(self, num_tries: int = 100):
         for i in range(num_tries):
-            room = self.create_room()
+            room = self.create_room(id=i)
             if not self.overlaps_existing_room(room, border=3):
                 return room
             else:
@@ -481,7 +449,7 @@ class ShipGenerator:
 
     def reflect_room(self, room):
         reflected_coord = self.reflect_coord(Coordinate(room.x, room.y))
-        return Rectangle(reflected_coord.x, reflected_coord.y, room.width, room.height)
+        return Rectangle(room.id, reflected_coord.x, reflected_coord.y, room.width, room.height)
 
 
 if __name__ == '__main__':
@@ -498,6 +466,3 @@ if __name__ == '__main__':
     stop = timeit.default_timer()
     execution_time = stop - start
     logger.info(f"Ship generation Executed in {str(execution_time * 1000)}ms")  # It returns time in milliseconds
-
-    # rect = Rectangle(0, 0, 3, 3)
-    # rect_2 = Rectangle(0, 0, 3, 3)
