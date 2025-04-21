@@ -1,5 +1,5 @@
 numpy==2.0.2
-packaging==24.1
+packaging==25.0
 pygame==2.6.0
 Pygments==2.18.0
 pyinstaller==6.10
